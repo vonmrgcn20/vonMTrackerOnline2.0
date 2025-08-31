@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Money Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #E0E0E0;
+        }
+        .bg-dark { background-color: #1E1E1E; }
+        .bg-dark-2 { background-color: #2C2C2E; }
+        .bg-dark-3 { background-color: #3A3A3C; }
+        .border-dark { border-color: #3A3A3C; }
+        .text-green-accent { color: #34C759; }
+        .text-red-accent { color: #FF3B30; }
+        .text-blue-accent { color: #0A84FF; }
+        .bg-green-accent { background-color: #34C759; }
+        .bg-red-accent { background-color: #FF3B30; }
+        .text-secondary { color: #8E8E93; }
+        .tab-active { color: #0A84FF; border-bottom: 2px solid #0A84FF; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #3A3A3C; border-radius: 10px; }
+        .modal-keypad button {
+            transition: background-color 0.2s;
+        }
+        .modal-keypad button:active {
+            background-color: #555;
+        }
+        .animate-modal-open {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .animate-modal-center-open {
+            animation: fadeInScale 0.3s ease-out forwards;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .icon-picker-item.selected, .color-picker-item.selected {
+            outline: 2px solid #0A84FF;
+            outline-offset: 2px;
+        }
+        .category-ignored, .account-ignored {
+            opacity: 0.5;
+        }
+        .display-option.selected {
+            color: #0A84FF;
+            font-weight: 600;
+        }
+        .calendar-day.selected {
+            background-color: #0A84FF;
+            color: white;
+            border-radius: 50%;
+        }
+         .calendar-day.today {
+            border: 1px solid #0A84FF;
+            border-radius: 50%;
+        }
+        .time-ampm-btn.selected {
+            background-color: #0A84FF;
+            color: white;
+        }
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 40px;
+            height: 40px;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+        .progress-bar-inner {
+            transition: width 0.5s ease-in-out;
+        }
+        .budget-context-menu {
+            position: absolute;
+            z-index: 60;
+        }
+    </style>
+</head>
+<body class="overscroll-none">
+
+    <div id="app-container" class="max-w-md mx-auto h-screen flex flex-col bg-dark overflow-hidden shadow-2xl relative">
+        <!-- Header -->
+        <header id="main-header" class="bg-dark-2 p-4 shadow-md z-10">
+            <div class="flex justify-between items-center mb-4">
+                 <div class="flex items-center gap-4">
+                    <button id="prev-date-btn" class="text-secondary text-xl"><i class="fas fa-chevron-left"></i></button>
+                    <button id="current-date-display" class="font-semibold text-lg">August, 2025</button>
+                    <button id="next-date-btn" class="text-secondary text-xl"><i class="fas fa-chevron-right"></i></button>
+                 </div>
+                <div class="flex items-center">
+                    <button id="search-btn" class="text-secondary text-xl mr-4"><i class="fas fa-search"></i></button>
+                    <button id="display-options-btn" class="text-secondary text-xl"><i class="fas fa-bars"></i></button>
+                </div>
+            </div>
+            <div id="header-summary" class="grid grid-cols-3 gap-2 text-center text-sm">
+                <div>
+                    <span class="text-red-accent uppercase text-xs block">Expense</span>
+                    <span id="total-expense" class="font-bold text-lg">₱0.00</span>
+                </div>
+                <div>
+                    <span class="text-green-accent uppercase text-xs block">Income</span>
+                    <span id="total-income" class="font-bold text-lg">₱0.00</span>
+                </div>
+                <div>
+                    <span class="text-secondary uppercase text-xs block">Total</span>
+                    <span id="total-balance" class="font-bold text-lg">₱0.00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content (Records) -->
+        <main id="records-view" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <!-- Transactions will be injected here -->
+        </main>
+        
+        <!-- Search View -->
+        <div id="search-view" class="hidden absolute inset-0 bg-dark z-30 flex flex-col">
+            <header class="bg-dark-2 p-4 flex items-center">
+                <button id="close-search-btn" class="text-secondary mr-4"><i class="fas fa-arrow-left"></i></button>
+                <div class="relative flex-1">
+                    <input type="text" id="search-input" placeholder="Search by notes, category, or account" class="w-full bg-dark-3 p-2 pl-4 pr-10 rounded-lg outline-none">
+                    <button id="clear-search-btn" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary"><i class="fas fa-times-circle"></i></button>
+                </div>
+            </header>
+            <div id="search-results-container" class="flex-1 overflow-y-auto p-4 space-y-4">
+                 <div class="text-center text-secondary mt-10">
+                    <i class="fas fa-search text-4xl mb-4"></i>
+                    <p>Search records by notes, category, or account name.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Placeholder views for other tabs -->
+        <main id="analysis-view" class="hidden flex-1 overflow-y-auto p-4">
+             <div class="flex flex-col h-full">
+                <h2 class="text-2xl font-bold mt-4 mb-4 text-center">Financial Analysis</h2>
+                <button id="analyze-spending-btn" class="bg-blue-accent text-white font-bold py-3 px-6 rounded-lg w-full max-w-xs mx-auto hover:bg-opacity-80 transition-opacity">
+                    ✨ Get AI Insights
+                </button>
+                <div id="analysis-loader" class="hidden my-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-accent mx-auto"></div>
+                    <p class="text-secondary mt-2 text-center">Analyzing your finances...</p>
+                </div>
+                <div id="analysis-results" class="text-left bg-dark-2 rounded-lg p-4 mt-6 overflow-y-auto flex-1 hidden space-y-3">
+                    <!-- AI insights will be displayed here -->
+                </div>
+                <div id="analysis-placeholder" class="text-center text-secondary mt-10 flex-1 flex flex-col justify-center items-center">
+                     <i class="fas fa-magic text-4xl mb-4"></i>
+                     <p>Click the button to get personalized insights on your spending for the selected period.</p>
+                </div>
+            </div>
+        </main>
+        <main id="budgets-view" class="hidden flex-1 overflow-y-auto p-4 space-y-4">
+             <div class="bg-dark-2 rounded-lg p-4">
+                <div class="grid grid-cols-2 text-center mb-4">
+                    <div>
+                        <span class="text-secondary uppercase text-xs block">Total Budget</span>
+                        <span id="total-budget" class="font-bold text-lg">₱0.00</span>
+                    </div>
+                    <div>
+                        <span class="text-secondary uppercase text-xs block">Total Spent</span>
+                        <span id="total-spent" class="font-bold text-lg">₱0.00</span>
+                    </div>
+                </div>
+             </div>
+             <div id="budgeted-categories-container" class="bg-dark-2 rounded-lg p-4">
+                <h3 class="font-semibold mb-2" id="budgeted-categories-title">Budgeted categories: Aug, 2025</h3>
+                <div id="budgeted-categories-list" class="space-y-4 relative">
+                    <!-- Budgeted categories will be injected here -->
+                </div>
+             </div>
+             <div id="not-budgeted-container" class="bg-dark-2 rounded-lg p-4">
+                <h3 class="font-semibold mb-2">Not budgeted this month</h3>
+                <div id="not-budgeted-list" class="space-y-2">
+                     <!-- Categories without a budget will be injected here -->
+                </div>
+             </div>
+        </main>
+        <main id="accounts-view" class="hidden flex-1 overflow-y-auto p-4 space-y-4">
+            <div class="bg-dark-2 rounded-lg p-4">
+                 <h3 class="font-semibold mb-2">ACCOUNTS</h3>
+                 <div id="accounts-list" class="space-y-2"></div>
+            </div>
+        </main>
+        <main id="categories-view" class="hidden flex-1 overflow-y-auto p-4 space-y-4">
+             <div class="bg-dark-2 rounded-lg p-4">
+                <h3 class="font-semibold mb-2 text-green-accent">INCOME CATEGORIES</h3>
+                <div id="income-categories-list" class="space-y-2"></div>
+            </div>
+            <div class="bg-dark-2 rounded-lg p-4">
+                <h3 class="font-semibold mb-2 text-red-accent">EXPENSE CATEGORIES</h3>
+                <div id="expense-categories-list" class="space-y-2"></div>
+            </div>
+        </main>
+
+        <!-- Floating Action Buttons -->
+        <button id="add-transaction-btn" class="absolute bottom-24 right-6 bg-blue-accent w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl shadow-lg transform hover:scale-110 transition-transform z-20">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button id="add-category-btn" class="hidden absolute bottom-24 right-6 bg-blue-accent w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl shadow-lg transform hover:scale-110 transition-transform z-20">
+            <i class="fas fa-plus"></i>
+        </button>
+         <button id="add-account-btn" class="hidden absolute bottom-24 right-6 bg-blue-accent w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl shadow-lg transform hover:scale-110 transition-transform z-20">
+            <i class="fas fa-plus"></i>
+        </button>
+        
+        <!-- Bottom Navigation -->
+        <nav class="bg-dark-2 grid grid-cols-5 text-center text-secondary text-xs p-2 border-t border-dark">
+            <button class="tab-btn p-2 tab-active" data-view="records-view">
+                <i class="fas fa-clipboard-list text-xl mb-1 block"></i> Records
+            </button>
+            <button class="tab-btn p-2" data-view="analysis-view">
+                <i class="fas fa-chart-pie text-xl mb-1 block"></i> Analysis
+            </button>
+            <button class="tab-btn p-2" data-view="budgets-view">
+                <i class="fas fa-wallet text-xl mb-1 block"></i> Budgets
+            </button>
+            <button class="tab-btn p-2" data-view="accounts-view">
+                <i class="fas fa-university text-xl mb-1 block"></i> Accounts
+            </button>
+            <button class="tab-btn p-2" data-view="categories-view">
+                <i class="fas fa-tags text-xl mb-1 block"></i> Categories
+            </button>
+        </nav>
+    </div>
+    
+    <!-- Record Detail Modal -->
+    <div id="record-detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-dark-2 w-full max-w-sm mx-auto rounded-xl animate-modal-center-open shadow-lg relative">
+            <div id="record-detail-header" class="p-4 rounded-t-xl">
+                 <div class="flex justify-between items-center text-white">
+                    <button id="close-record-detail-btn"><i class="fas fa-times"></i></button>
+                    <div>
+                        <button id="edit-record-btn"><i class="fas fa-pen"></i></button>
+                        <button id="delete-record-btn" class="ml-4"><i class="fas fa-trash"></i></button>
+                    </div>
+                 </div>
+                 <p class="text-xs uppercase mt-4">Expense</p>
+                 <p class="text-3xl font-bold">P8,000.00</p>
+                 <div class="flex justify-between text-xs mt-2 opacity-80">
+                    <span>Aug 30, 2025</span>
+                    <span>12:16PM</span>
+                 </div>
+            </div>
+            <div class="p-4 space-y-3">
+                <div class="flex justify-between items-center bg-dark-3 p-3 rounded-lg">
+                    <span>Account</span>
+                    <span id="record-detail-account" class="font-semibold">Cash</span>
+                </div>
+                <div class="flex justify-between items-center bg-dark-3 p-3 rounded-lg">
+                    <span>Category</span>
+                    <span id="record-detail-category" class="font-semibold">Food</span>
+                </div>
+                <div class="bg-dark-3 p-3 rounded-lg min-h-[6rem]">
+                    <p class="text-sm text-secondary">Notes</p>
+                    <p id="record-detail-notes"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Add Transaction Modal -->
+    <div id="transaction-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex flex-col justify-end z-50">
+        <div class="bg-dark-2 w-full max-w-md mx-auto rounded-t-2xl animate-modal-open flex flex-col h-[95%]">
+            <header class="p-4 flex justify-center items-center relative">
+                 <button id="cancel-btn" class="absolute left-4 text-blue-accent">CANCEL</button>
+                <div class="flex border border-dark-3 p-1 rounded-lg text-sm">
+                    <button id="income-tab" class="modal-tab px-4 py-1 rounded-md">INCOME</button>
+                    <button id="expense-tab" class="modal-tab px-4 py-1 rounded-md">EXPENSE</button>
+                </div>
+                 <button id="save-btn" class="absolute right-4 text-blue-accent font-bold">SAVE</button>
+            </header>
+            
+            <div class="p-4 space-y-4 flex-1 flex flex-col">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="account-select" class="bg-dark-3 p-3 rounded-lg w-full text-center outline-none">
+                        <!-- Options populated by JS -->
+                    </select>
+                    <select id="category-select" class="bg-dark-3 p-3 rounded-lg w-full text-center outline-none">
+                       <!-- Options populated by JS -->
+                    </select>
+                </div>
+
+                <textarea id="notes-input" class="bg-dark-3 p-3 rounded-lg w-full h-24 resize-none outline-none" placeholder="Add Notes"></textarea>
+                
+                <div class="bg-dark-3 p-3 rounded-lg flex justify-between items-center text-2xl">
+                    <span id="amount-display" class="font-bold text-right flex-1">0</span>
+                    <button id="backspace-btn"><i class="fas fa-backspace text-secondary pl-4"></i></button>
+                </div>
+                
+                <!-- New Keypad -->
+                <div class="grid grid-cols-4 gap-2 text-xl flex-1 modal-keypad">
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="%">%</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="(">(</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key=")">)</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="C">C</button>
+                    
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="+">+</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="7">7</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="8">8</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="9">9</button>
+                    
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="-">-</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="4">4</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="5">5</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="6">6</button>
+
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="*">x</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="1">1</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="2">2</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="3">3</button>
+                    
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="/">/</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg col-span-2" data-key="0">0</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key=".">.</button>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2 text-center text-sm">
+                    <button id="date-input-btn" class="bg-dark-3 p-3 rounded-lg outline-none"></button>
+                    <button id="time-input-btn" class="bg-dark-3 p-3 rounded-lg outline-none"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Category Modal -->
+    <div id="category-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-dark-2 w-full max-w-sm mx-auto rounded-xl animate-modal-center-open shadow-lg flex flex-col max-h-[90vh]">
+            <div class="p-6 overflow-y-auto">
+                <h3 id="category-modal-title" class="text-xl font-bold text-center mb-6">Add New Category</h3>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-2 bg-dark-3 p-1 rounded-lg">
+                        <button id="cat-income-tab" class="cat-modal-tab py-2 rounded-md font-semibold">Income</button>
+                        <button id="cat-expense-tab" class="cat-modal-tab py-2 rounded-md font-semibold">Expense</button>
+                    </div>
+                     <input id="cat-name-input" type="text" placeholder="Name" class="w-full bg-dark-3 p-3 rounded-md outline-none focus:ring-2 focus:ring-blue-accent">
+
+                    <div>
+                        <label class="text-secondary text-sm mb-2 block">Icons:</label>
+                        <div id="icon-picker" class="grid grid-cols-6 gap-3">
+                            <!-- Icons populated by JS -->
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                         <label class="text-secondary text-sm">Color Picker:</label>
+                         <input type="color" id="color-picker" value="#C81C1C" class="bg-dark-3 rounded-full">
+                    </div>
+
+                    <div id="uploaded-icon-preview-container" class="hidden flex items-center justify-between bg-dark-3 p-2 rounded-md">
+                        <div class="flex items-center min-w-0">
+                            <img id="uploaded-icon-preview" src="" class="w-8 h-8 rounded-full mr-3 flex-shrink-0">
+                            <span id="uploaded-icon-name" class="text-sm truncate"></span>
+                        </div>
+                        <button id="remove-uploaded-icon-btn" class="ml-2 flex-shrink-0"><i class="fas fa-times text-red-accent"></i></button>
+                    </div>
+                    
+                    <label for="upload-icon-input" class="w-full text-center bg-dark-3 p-3 rounded-md cursor-pointer hover:bg-opacity-80 block">
+                        Upload Icon
+                    </label>
+                    <input type="file" id="upload-icon-input" class="hidden" accept="image/*">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-px mt-auto">
+                <button id="cancel-cat-btn" class="bg-dark-3 text-secondary py-3 rounded-bl-xl hover:bg-opacity-80 font-semibold">Cancel</button>
+                <button id="save-cat-btn" class="bg-blue-accent text-white py-3 rounded-br-xl font-bold hover:bg-opacity-80">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Account Modal -->
+    <div id="account-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-dark-2 w-full max-w-sm mx-auto rounded-xl animate-modal-center-open shadow-lg flex flex-col max-h-[90vh]">
+            <div class="p-6 overflow-y-auto">
+                <h3 id="account-modal-title" class="text-xl font-bold text-center mb-6">Add New Account</h3>
+                <div class="space-y-4">
+                     <input id="account-initial-amount-input" type="number" placeholder="Initial Amount" class="w-full bg-dark-3 p-3 rounded-md outline-none focus:ring-2 focus:ring-blue-accent">
+                     <input id="account-name-input" type="text" placeholder="Name" class="w-full bg-dark-3 p-3 rounded-md outline-none focus:ring-2 focus:ring-blue-accent">
+                    <div>
+                        <label class="text-secondary text-sm mb-2 block">Icons:</label>
+                        <div id="account-icon-picker" class="grid grid-cols-6 gap-3">
+                            <!-- Account Icons populated by JS -->
+                        </div>
+                    </div>
+                     <div class="flex items-center justify-between">
+                         <label class="text-secondary text-sm">Color Picker:</label>
+                         <input type="color" id="account-color-picker" value="#C81C1C" class="bg-dark-3 rounded-full">
+                    </div>
+                    <div id="uploaded-account-icon-preview-container" class="hidden flex items-center justify-between bg-dark-3 p-2 rounded-md">
+                        <div class="flex items-center min-w-0">
+                            <img id="uploaded-account-icon-preview" src="" class="w-8 h-8 rounded-full mr-3 flex-shrink-0">
+                            <span id="uploaded-account-icon-name" class="text-sm truncate"></span>
+                        </div>
+                        <button id="remove-uploaded-account-icon-btn" class="ml-2 flex-shrink-0"><i class="fas fa-times text-red-accent"></i></button>
+                    </div>
+                    <label for="upload-account-icon-input" class="w-full text-center bg-dark-3 p-3 rounded-md cursor-pointer hover:bg-opacity-80 block">
+                        Upload Icon
+                    </label>
+                    <input type="file" id="upload-account-icon-input" class="hidden" accept="image/*">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-px mt-auto">
+                <button id="cancel-account-btn" class="bg-dark-3 text-secondary py-3 rounded-bl-xl hover:bg-opacity-80 font-semibold">Cancel</button>
+                <button id="save-account-btn" class="bg-blue-accent text-white py-3 rounded-br-xl font-bold hover:bg-opacity-80">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu Modal -->
+    <div id="context-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+         <div class="bg-dark-2 w-full max-w-xs mx-auto rounded-xl animate-modal-center-open shadow-lg">
+            <div class="p-2">
+                <button id="edit-btn" class="w-full text-left p-3 hover:bg-dark-3 rounded-lg">Edit</button>
+                <button id="ignore-btn" class="w-full text-left p-3 hover:bg-dark-3 rounded-lg">Ignore</button>
+                <button id="delete-btn" class="w-full text-left p-3 text-red-accent hover:bg-dark-3 rounded-lg">Delete</button>
+                <hr class="border-dark my-1">
+                <button id="cancel-context-btn" class="w-full text-left p-3 hover:bg-dark-3 rounded-lg">Cancel</button>
+            </div>
+         </div>
+    </div>
+
+    <!-- Budget Context Menu -->
+    <div id="budget-context-modal" class="hidden bg-dark-3 w-40 rounded-lg shadow-lg p-2 budget-context-menu">
+        <button id="change-limit-btn" class="w-full text-left p-2 hover:bg-dark-2 rounded-md text-sm">Change limit</button>
+        <button id="remove-budget-btn" class="w-full text-left p-2 hover:bg-dark-2 rounded-md text-sm text-red-accent">Remove budget</button>
+    </div>
+    
+    <!-- Display Options Modal -->
+    <div id="display-options-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+         <div class="bg-dark-2 w-full max-w-xs mx-auto rounded-xl animate-modal-center-open shadow-lg p-4">
+            <h3 class="font-bold mb-4">Display options</h3>
+            <div class="space-y-2">
+                <p class="text-secondary text-sm">View mode:</p>
+                <button class="display-option w-full text-left p-2 rounded-md hover:bg-dark-3" data-mode="daily">DAILY</button>
+                <button class="display-option w-full text-left p-2 rounded-md hover:bg-dark-3" data-mode="weekly">WEEKLY</button>
+                <button class="display-option w-full text-left p-2 rounded-md hover:bg-dark-3" data-mode="monthly">MONTHLY</button>
+                <button class="display-option w-full text-left p-2 rounded-md hover:bg-dark-3" data-mode="3months">3 MONTHS</button>
+                <button class="display-option w-full text-left p-2 rounded-md hover:bg-dark-3" data-mode="6months">6 MONTHS</button>
+                <button class="display-option w-full text-left p-2 rounded-md hover:bg-dark-3" data-mode="9months">9 MONTHS</button>
+                <button class="display-option w-full text-left p-2 rounded-md hover:bg-dark-3" data-mode="yearly">YEARLY</button>
+            </div>
+            <hr class="border-dark my-4">
+             <div class="space-y-2">
+                <p class="text-secondary text-sm">Show total:</p>
+                <button class="show-total-option w-full text-left p-2 rounded-md hover:bg-dark-3" data-total="yes">YES</button>
+                <button class="show-total-option w-full text-left p-2 rounded-md hover:bg-dark-3" data-total="no">NO</button>
+            </div>
+         </div>
+    </div>
+    
+    <!-- Calendar Modal -->
+    <div id="calendar-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+         <div class="bg-dark-2 w-full max-w-xs mx-auto rounded-xl animate-modal-center-open shadow-lg p-4">
+            <div class="flex justify-between items-center mb-4">
+                <button id="calendar-prev-month-btn" class="text-secondary text-lg"><i class="fas fa-chevron-left"></i></button>
+                <h3 id="calendar-month-year" class="font-bold"></h3>
+                <button id="calendar-next-month-btn" class="text-secondary text-lg"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="grid grid-cols-7 text-center text-secondary text-sm mb-2">
+                <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+            </div>
+            <div id="calendar-days-grid" class="grid grid-cols-7 text-center gap-y-2">
+                <!-- Calendar days will be injected here -->
+            </div>
+             <div class="flex justify-end gap-4 mt-4">
+                <button id="calendar-cancel-btn" class="text-blue-accent font-semibold">CANCEL</button>
+                <button id="calendar-ok-btn" class="text-blue-accent font-semibold">OK</button>
+            </div>
+         </div>
+    </div>
+
+    <!-- Time Picker Modal -->
+    <div id="time-picker-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+         <div class="bg-dark-2 w-full max-w-xs mx-auto rounded-xl animate-modal-center-open shadow-lg p-4">
+            <div class="flex justify-center items-center gap-2 text-4xl font-mono mb-4">
+                <input type="number" id="time-hour-input" class="w-20 bg-dark-3 text-center rounded-md outline-none p-2" min="1" max="12">
+                <span>:</span>
+                <input type="number" id="time-minute-input" class="w-20 bg-dark-3 text-center rounded-md outline-none p-2" min="0" max="59">
+            </div>
+            <div class="flex justify-center bg-dark-3 p-1 rounded-lg text-sm mb-4">
+                <button id="time-am-btn" class="time-ampm-btn px-4 py-1 rounded-md">AM</button>
+                <button id="time-pm-btn" class="time-ampm-btn px-4 py-1 rounded-md">PM</button>
+            </div>
+             <div class="flex justify-end gap-4 mt-4">
+                <button id="time-picker-cancel-btn" class="text-blue-accent font-semibold">CANCEL</button>
+                <button id="time-picker-ok-btn" class="text-blue-accent font-semibold">OK</button>
+            </div>
+         </div>
+    </div>
+
+    <!-- Set Budget Modal -->
+    <div id="set-budget-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+         <div class="bg-dark-2 w-full max-w-xs mx-auto rounded-xl animate-modal-center-open shadow-lg p-6 text-center">
+            <h3 class="text-xl font-bold mb-4">Set Budget</h3>
+            <div id="budget-category-display" class="bg-dark-3 p-3 rounded-lg flex items-center justify-center mb-4">
+                <!-- Category icon and name here -->
+            </div>
+            <input id="budget-limit-input" type="number" placeholder="Limit" class="w-full bg-dark-3 p-3 rounded-md outline-none focus:ring-2 focus:ring-blue-accent mb-2 text-center">
+            <p id="budget-month-display" class="text-secondary text-sm mb-4"></p>
+            <div class="flex justify-center gap-4">
+                <button id="cancel-budget-btn" class="bg-dark-3 text-secondary py-2 px-6 rounded-lg hover:bg-opacity-80">Cancel</button>
+                <button id="save-budget-btn" class="bg-blue-accent text-white py-2 px-6 rounded-lg font-bold hover:bg-opacity-80">Set</button>
+            </div>
+         </div>
+    </div>
+
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+         <div class="bg-dark-2 w-full max-w-xs mx-auto rounded-xl animate-modal-center-open shadow-lg p-4 text-center">
+            <p id="confirm-message" class="mb-4">Are you sure?</p>
+            <div class="flex justify-center gap-4">
+                <button id="confirm-no-btn" class="bg-dark-3 text-secondary py-2 px-6 rounded-lg hover:bg-opacity-80">No</button>
+                <button id="confirm-yes-btn" class="bg-red-accent text-white py-2 px-6 rounded-lg font-bold hover:bg-opacity-80">Yes</button>
+            </div>
+         </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ICONS & COLORS ---
+            const CATEGORY_ICONS = ['fa-gift', 'fa-dollar-sign', 'fa-graduation-cap', 'fa-utensils', 'fa-plane', 'fa-cut', 'fa-home', 'fa-mobile-alt', 'fa-user-friends', 'fa-shopping-cart', 'fa-futbol', 'fa-file-invoice-dollar', 'fa-car', 'fa-heart', 'fa-briefcase', 'fa-medkit', 'fa-film', 'fa-paw', 'fa-tshirt', 'fa-gas-pump', 'fa-couch', 'fa-gamepad', 'fa-book', 'fa-music'];
+            const ACCOUNT_ICONS = ['fa-money-bill-wave', 'fa-credit-card', 'fa-piggy-bank', 'fa-university', 'fa-wallet', 'fa-landmark', 'fa-donate', 'fa-store', 'fa-coins', 'fa-receipt', 'fa-briefcase', 'fa-shield-alt', 'fa-building-columns', 'fa-sack-dollar', 'fa-shop', 'fa-bus', 'fa-plane-departure', 'fa-cash-register', 'fa-house-user', 'fa-lightbulb', 'fa-wifi', 'fa-faucet', 'fa-cart-flatbed', 'fa-mobile-screen-button'];
+
+            // --- STATE MANAGEMENT ---
+            let state = {
+                transactions: [],
+                accounts: [],
+                categories: {
+                    income: [],
+                    expense: []
+                },
+                budgets: {}, // { 'YYYY-MM': { categoryId: amount } }
+                currentTransaction: {
+                    type: 'expense',
+                    amountStr: '0',
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toTimeString().slice(0,5),
+                },
+                editingItem: null, 
+                editingBudget: null, // { categoryId }
+                confirmAction: null, 
+                currentDate: new Date(),
+                displayMode: 'monthly',
+                showTotal: 'yes',
+                calendarDate: new Date(), 
+                calendarContext: 'main',
+                filter: { type: null, value: null } 
+            };
+            
+            // --- DOM ELEMENTS ---
+            const addTransactionBtn = document.getElementById('add-transaction-btn');
+            const addCategoryBtn = document.getElementById('add-category-btn');
+            const addAccountBtn = document.getElementById('add-account-btn');
+            const transactionModal = document.getElementById('transaction-modal');
+            const categoryModal = document.getElementById('category-modal');
+            const accountModal = document.getElementById('account-modal');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const incomeTab = document.getElementById('income-tab');
+            const expenseTab = document.getElementById('expense-tab');
+            const amountDisplay = document.getElementById('amount-display');
+            const backspaceBtn = document.getElementById('backspace-btn');
+            const keypadBtns = document.querySelectorAll('.keypad-btn');
+            const accountSelect = document.getElementById('account-select');
+            const categorySelect = document.getElementById('category-select');
+            const notesInput = document.getElementById('notes-input');
+            const dateInputBtn = document.getElementById('date-input-btn');
+            const timeInputBtn = document.getElementById('time-input-btn');
+            const recordsView = document.getElementById('records-view');
+            const budgetsView = document.getElementById('budgets-view');
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const mainViews = document.querySelectorAll('main');
+            const incomeCategoriesList = document.getElementById('income-categories-list');
+            const expenseCategoriesList = document.getElementById('expense-categories-list');
+            const accountsList = document.getElementById('accounts-list');
+            const currentDateDisplay = document.getElementById('current-date-display');
+            const prevDateBtn = document.getElementById('prev-date-btn');
+            const nextDateBtn = document.getElementById('next-date-btn');
+            const displayOptionsBtn = document.getElementById('display-options-btn');
+            const displayOptionsModal = document.getElementById('display-options-modal');
+            const calendarModal = document.getElementById('calendar-modal');
+            const timePickerModal = document.getElementById('time-picker-modal');
+            const headerSummary = document.getElementById('header-summary');
+            const searchBtn = document.getElementById('search-btn');
+            const searchView = document.getElementById('search-view');
+            const closeSearchBtn = document.getElementById('close-search-btn');
+            const searchInput = document.getElementById('search-input');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+            const searchResultsContainer = document.getElementById('search-results-container');
+            const recordDetailModal = document.getElementById('record-detail-modal');
+            
+            // AI Analysis Elements
+            const analyzeSpendingBtn = document.getElementById('analyze-spending-btn');
+            const analysisLoader = document.getElementById('analysis-loader');
+            const analysisResults = document.getElementById('analysis-results');
+            const analysisPlaceholder = document.getElementById('analysis-placeholder');
+
+            // Budget Elements
+            const totalBudgetEl = document.getElementById('total-budget');
+            const totalSpentEl = document.getElementById('total-spent');
+            const budgetedCategoriesTitle = document.getElementById('budgeted-categories-title');
+            const budgetedCategoriesList = document.getElementById('budgeted-categories-list');
+            const notBudgetedList = document.getElementById('not-budgeted-list');
+            const setBudgetModal = document.getElementById('set-budget-modal');
+            const budgetCategoryDisplay = document.getElementById('budget-category-display');
+            const budgetLimitInput = document.getElementById('budget-limit-input');
+            const budgetMonthDisplay = document.getElementById('budget-month-display');
+            const cancelBudgetBtn = document.getElementById('cancel-budget-btn');
+            const saveBudgetBtn = document.getElementById('save-budget-btn');
+            const budgetContextModal = document.getElementById('budget-context-modal');
+            const changeLimitBtn = document.getElementById('change-limit-btn');
+            const removeBudgetBtn = document.getElementById('remove-budget-btn');
+
+
+            // Category Modal Elements
+            const categoryModalTitle = document.getElementById('category-modal-title');
+            const catIncomeTab = document.getElementById('cat-income-tab');
+            const catExpenseTab = document.getElementById('cat-expense-tab');
+            const catNameInput = document.getElementById('cat-name-input');
+            const iconPicker = document.getElementById('icon-picker');
+            const colorPicker = document.getElementById('color-picker');
+            const cancelCatBtn = document.getElementById('cancel-cat-btn');
+            const saveCatBtn = document.getElementById('save-cat-btn');
+            const uploadIconInput = document.getElementById('upload-icon-input');
+            const uploadedIconPreviewContainer = document.getElementById('uploaded-icon-preview-container');
+            const uploadedIconPreview = document.getElementById('uploaded-icon-preview');
+            const uploadedIconName = document.getElementById('uploaded-icon-name');
+            const removeUploadedIconBtn = document.getElementById('remove-uploaded-icon-btn');
+
+
+            // Account Modal Elements
+            const accountModalTitle = document.getElementById('account-modal-title');
+            const accountInitialAmountInput = document.getElementById('account-initial-amount-input');
+            const accountNameInput = document.getElementById('account-name-input');
+            const accountIconPicker = document.getElementById('account-icon-picker');
+            const accountColorPicker = document.getElementById('account-color-picker');
+            const cancelAccountBtn = document.getElementById('cancel-account-btn');
+            const saveAccountBtn = document.getElementById('save-account-btn');
+            const uploadAccountIconInput = document.getElementById('upload-account-icon-input');
+            const uploadedAccountIconPreviewContainer = document.getElementById('uploaded-account-icon-preview-container');
+            const uploadedAccountIconPreview = document.getElementById('uploaded-account-icon-preview');
+            const uploadedAccountIconName = document.getElementById('uploaded-account-icon-name');
+            const removeUploadedAccountIconBtn = document.getElementById('remove-uploaded-account-icon-btn');
+
+            // Context Menu Elements
+            const contextModal = document.getElementById('context-modal');
+            const editBtn = document.getElementById('edit-btn');
+            const ignoreBtn = document.getElementById('ignore-btn');
+            const deleteBtn = document.getElementById('delete-btn');
+            const cancelContextBtn = document.getElementById('cancel-context-btn');
+
+            // Calendar Modal Elements
+            const calendarMonthYear = document.getElementById('calendar-month-year');
+            const calendarPrevMonthBtn = document.getElementById('calendar-prev-month-btn');
+            const calendarNextMonthBtn = document.getElementById('calendar-next-month-btn');
+            const calendarDaysGrid = document.getElementById('calendar-days-grid');
+            const calendarOkBtn = document.getElementById('calendar-ok-btn');
+            const calendarCancelBtn = document.getElementById('calendar-cancel-btn');
+
+            // Time Picker Modal Elements
+            const timeHourInput = document.getElementById('time-hour-input');
+            const timeMinuteInput = document.getElementById('time-minute-input');
+            const timeAmBtn = document.getElementById('time-am-btn');
+            const timePmBtn = document.getElementById('time-pm-btn');
+            const timePickerOkBtn = document.getElementById('time-picker-ok-btn');
+            const timePickerCancelBtn = document.getElementById('time-picker-cancel-btn');
+
+            // Confirm Modal Elements
+            const confirmModal = document.getElementById('confirm-modal');
+            const confirmMessage = document.getElementById('confirm-message');
+            const confirmYesBtn = document.getElementById('confirm-yes-btn');
+            const confirmNoBtn = document.getElementById('confirm-no-btn');
+
+
+            // --- FUNCTIONS ---
+            
+            const formatCurrency = (amount) => `₱${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            
+            const formatDate = (date) => {
+                return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', weekday: 'long' });
+            };
+            
+            const formatAMPM = (timeString) => { // timeString is "HH:mm"
+                if (!timeString) return '';
+                let [hours, minutes] = timeString.split(':');
+                hours = parseInt(hours);
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                return `${hours}:${minutes} ${ampm}`;
+            };
+            
+            const updateDateDisplay = () => {
+                const now = state.currentDate;
+                let text = '';
+                if(state.filter.type) {
+                     text = `Filter: ${state.filter.value}`;
+                } else {
+                    switch(state.displayMode) {
+                        case 'daily':
+                            text = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            break;
+                        case 'weekly':
+                            const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+                            const endOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() + 6);
+                            text = `${startOfWeek.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} - ${endOfWeek.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}`;
+                            break;
+                        case 'monthly':
+                            text = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                            break;
+                        case 'yearly':
+                            text = now.getFullYear();
+                            break;
+                        default:
+                            // For 3, 6, 9 months
+                            const monthCount = parseInt(state.displayMode.replace('months', ''));
+                            const start = new Date(now);
+                            const end = new Date(now);
+                            end.setMonth(end.getMonth() + monthCount - 1);
+                            text = `${start.toLocaleDateString('en-US', {month: 'short'})} - ${end.toLocaleDateString('en-US', {month: 'short', year: 'numeric'})}`;
+                    }
+                }
+                 currentDateDisplay.textContent = text;
+            };
+
+            const renderSummary = () => {
+                const filteredTransactions = getFilteredTransactions();
+
+                const totalIncome = filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+                const totalExpense = filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+                const totalBalance = totalIncome - totalExpense;
+
+                document.getElementById('total-income').textContent = formatCurrency(totalIncome);
+                document.getElementById('total-expense').textContent = formatCurrency(totalExpense);
+                document.getElementById('total-balance').textContent = formatCurrency(totalBalance);
+            };
+            
+            const getFilteredTransactions = () => {
+                let transactions = state.transactions;
+                
+                if (state.filter.type && state.filter.value) {
+                    transactions = transactions.filter(t => t[state.filter.type] === state.filter.value);
+                }
+                
+                const now = state.currentDate;
+                return transactions.filter(t => {
+                    const tDate = new Date(t.date + 'T00:00:00');
+                    let startDate, endDate;
+
+                    switch(state.displayMode){
+                        case 'daily':
+                            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                            endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                            break;
+                        case 'weekly':
+                            const day = now.getDay();
+                            const first = now.getDate() - day + (day === 0 ? -6 : 1); 
+                            startDate = new Date(now.getFullYear(), now.getMonth(), first);
+                            endDate = new Date(now.getFullYear(), now.getMonth(), first + 7);
+                            break;
+                        case 'monthly':
+                            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                            endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                            break;
+                         case 'yearly':
+                            startDate = new Date(now.getFullYear(), 0, 1);
+                            endDate = new Date(now.getFullYear() + 1, 0, 1);
+                            break;
+                        default: // 3, 6, 9 months
+                            const monthCount = parseInt(state.displayMode.replace('months', ''));
+                            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                            endDate = new Date(now.getFullYear(), now.getMonth() + monthCount, 1);
+                            break;
+                    }
+
+                    return tDate >= startDate && tDate < endDate;
+                });
+            }
+
+            const renderRecords = (transactionsToRender, container) => {
+                container.innerHTML = '';
+                
+                const transactions = transactionsToRender || getFilteredTransactions();
+
+                if (transactions.length === 0) {
+                    container.innerHTML = `<div class="text-center text-secondary mt-10">No transactions for this period.</div>`;
+                    return;
+                }
+
+                const groupedByDate = transactions.reduce((acc, t) => {
+                    (acc[t.date] = acc[t.date] || []).push(t);
+                    return acc;
+                }, {});
+
+                const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(b) - new Date(a));
+
+                sortedDates.forEach(date => {
+                    const dayGroupEl = document.createElement('div');
+                    dayGroupEl.className = 'bg-dark-2 rounded-lg';
+                    
+                    const dateHeader = document.createElement('div');
+                    dateHeader.className = 'p-3 border-b border-dark flex justify-between items-center';
+                    dateHeader.innerHTML = `<h3 class="font-semibold">${formatDate(new Date(date + 'T00:00:00'))}</h3>`;
+                    dayGroupEl.appendChild(dateHeader);
+
+                    groupedByDate[date].forEach(t => {
+                        const transactionEl = document.createElement('div');
+                        transactionEl.className = 'p-3 flex justify-between items-center border-b border-dark last:border-b-0 cursor-pointer record-item';
+                        transactionEl.dataset.id = t.id;
+                        const amountColor = t.type === 'income' ? 'text-green-accent' : 'text-red-accent';
+                        const sign = t.type === 'expense' ? '-' : '';
+
+                        const category = state.categories[t.type].find(c => c.name === t.category) || { icon: 'fa-tag', color: '#8E8E93', isCustom: false };
+                        
+                        const iconHtml = category.isCustom 
+                            ? `<img src="${category.icon}" class="w-full h-full object-cover">` 
+                            : `<i class="fas ${category.icon} text-white"></i>`;
+                        
+                        const bgColor = category.isCustom ? '' : `style="background-color: ${category.color}"`;
+
+                        transactionEl.innerHTML = `
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 overflow-hidden" ${bgColor}>
+                                    ${iconHtml}
+                                </div>
+                                <div>
+                                    <p class="font-medium">${t.category}</p>
+                                    <p class="text-xs text-secondary">${t.account}</p>
+                                </div>
+                            </div>
+                            <span class="font-bold ${amountColor}">${sign}${formatCurrency(t.amount)}</span>
+                        `;
+                        dayGroupEl.appendChild(transactionEl);
+                    });
+
+                    container.appendChild(dayGroupEl);
+                });
+            };
+
+            const renderCategories = () => {
+                const renderList = (list, type, element) => {
+                    element.innerHTML = '';
+                    if (list.length === 0) {
+                        element.innerHTML = `<p class="text-secondary text-sm">No categories yet.</p>`;
+                    } else {
+                        list.forEach(cat => {
+                            const catEl = document.createElement('div');
+                            catEl.className = `category-item item-container flex items-center justify-between p-2 rounded-md ${cat.ignored ? 'category-ignored' : ''}`;
+                            catEl.dataset.id = cat.id;
+                            catEl.dataset.type = 'category';
+                            catEl.dataset.itemType = type;
+                            
+                            const iconHtml = cat.isCustom 
+                                ? `<img src="${cat.icon}" class="w-full h-full object-cover">` 
+                                : `<i class="fas ${cat.icon} text-white text-sm"></i>`;
+                            const bgColor = cat.isCustom ? '' : `style="background-color: ${cat.color}"`;
+
+                            catEl.innerHTML = `
+                                <div class="flex items-center cursor-pointer filter-trigger" data-filter-type="category" data-filter-value="${cat.name}">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3 overflow-hidden pointer-events-none" ${bgColor}>
+                                        ${iconHtml}
+                                    </div>
+                                    <span class="font-medium pointer-events-none">${cat.name}</span>
+                                </div>
+                                <button class="context-menu-btn text-secondary px-2"><i class="fas fa-ellipsis-v"></i></button>
+                            `;
+                            element.appendChild(catEl);
+                        });
+                    }
+                };
+                renderList(state.categories.income, 'income', incomeCategoriesList);
+                renderList(state.categories.expense, 'expense', expenseCategoriesList);
+            };
+            
+            const renderAccounts = () => {
+                accountsList.innerHTML = '';
+                if (state.accounts.length === 0) {
+                    accountsList.innerHTML = `<p class="text-secondary text-sm">No accounts yet.</p>`;
+                } else {
+                    state.accounts.forEach(acc => {
+                        const balance = state.transactions.reduce((bal, t) => {
+                            if (t.account === acc.name) {
+                                return bal + (t.type === 'income' ? t.amount : -t.amount);
+                            }
+                            return bal;
+                        }, acc.initialAmount);
+
+                        const accEl = document.createElement('div');
+                        accEl.className = `account-item item-container flex items-center justify-between p-2 rounded-md ${acc.ignored ? 'account-ignored' : ''}`;
+                        accEl.dataset.id = acc.id;
+                        accEl.dataset.type = 'account';
+
+                        const iconHtml = acc.isCustom 
+                            ? `<img src="${acc.icon}" class="w-full h-full object-cover">` 
+                            : `<i class="fas ${acc.icon} text-xl"></i>`;
+                        const bgColor = acc.isCustom ? '' : `style="background-color: ${acc.color}"`;
+
+
+                        accEl.innerHTML = `
+                            <div class="flex items-center cursor-pointer filter-trigger" data-filter-type="account" data-filter-value="${acc.name}">
+                                <div class="bg-dark-3 w-10 h-10 rounded-lg flex items-center justify-center mr-3 overflow-hidden pointer-events-none" ${bgColor}>
+                                    ${iconHtml}
+                                </div>
+                                <div class="pointer-events-none">
+                                    <p class="font-medium">${acc.name}</p>
+                                    <p class="text-sm text-secondary">Balance: ${formatCurrency(balance)}</p>
+                                </div>
+                            </div>
+                            <button class="context-menu-btn text-secondary px-2"><i class="fas fa-ellipsis-v"></i></button>
+                        `;
+                        accountsList.appendChild(accEl);
+                    });
+                }
+            };
+
+            const renderBudgets = () => {
+                const monthKey = state.currentDate.toISOString().slice(0, 7);
+                const monthBudgets = state.budgets[monthKey] || {};
+                const transactionsForMonth = state.transactions.filter(t => t.date.startsWith(monthKey) && t.type === 'expense');
+
+                budgetedCategoriesList.innerHTML = '';
+                notBudgetedList.innerHTML = '';
+                
+                let totalBudget = 0;
+                let totalSpent = 0;
+
+                const allExpenseCategories = state.categories.expense.filter(c => !c.ignored);
+
+                allExpenseCategories.forEach(cat => {
+                    const budgetLimit = monthBudgets[cat.id];
+                    const spent = transactionsForMonth
+                        .filter(t => t.category === cat.name)
+                        .reduce((sum, t) => sum + t.amount, 0);
+
+                    if (budgetLimit !== undefined) {
+                        totalBudget += budgetLimit;
+                        totalSpent += spent;
+
+                        const remaining = budgetLimit - spent;
+                        const progress = budgetLimit > 0 ? (spent / budgetLimit) * 100 : (spent > 0 ? 100 : 0);
+                        const progressColor = progress > 100 ? 'bg-red-500' : 'bg-green-500';
+
+                        const iconHtml = cat.isCustom 
+                                ? `<img src="${cat.icon}" class="w-full h-full object-cover">` 
+                                : `<i class="fas ${cat.icon} text-white"></i>`;
+                        const bgColor = cat.isCustom ? '' : `style="background-color: ${cat.color}"`;
+
+                        const budgetEl = document.createElement('div');
+                        budgetEl.className = 'budget-item';
+                        budgetEl.innerHTML = `
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 overflow-hidden" ${bgColor}>${iconHtml}</div>
+                                    <div>
+                                        <p class="font-semibold">${cat.name}</p>
+                                        <p class="text-xs text-secondary">Limit: ${formatCurrency(budgetLimit)}</p>
+                                    </div>
+                                </div>
+                                <button class="budget-menu-btn text-secondary px-2" data-category-id="${cat.id}"><i class="fas fa-ellipsis-v"></i></button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-x-4 text-xs mb-1">
+                                <p>Spent: <span class="font-semibold">${formatCurrency(spent)}</span></p>
+                                <p class="text-right">Remaining: <span class="font-semibold">${formatCurrency(remaining)}</span></p>
+                            </div>
+                            <div class="w-full bg-dark-3 rounded-full h-2.5">
+                                <div class="progress-bar-inner ${progressColor} h-2.5 rounded-full" style="width: ${Math.min(progress, 100)}%"></div>
+                            </div>
+                            ${progress > 100 ? `<p class="text-red-accent text-xs text-right mt-1 font-semibold">*Limit exceeded</p>` : ''}
+                        `;
+                        budgetedCategoriesList.appendChild(budgetEl);
+
+                    } else {
+                        const iconHtml = cat.isCustom 
+                                ? `<img src="${cat.icon}" class="w-full h-full object-cover">` 
+                                : `<i class="fas ${cat.icon} text-white"></i>`;
+                        const bgColor = cat.isCustom ? '' : `style="background-color: ${cat.color}"`;
+
+                        const notBudgetedEl = document.createElement('div');
+                        notBudgetedEl.className = 'flex items-center justify-between p-2 rounded-md';
+                        notBudgetedEl.innerHTML = `
+                             <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3 overflow-hidden" ${bgColor}>
+                                    ${iconHtml}
+                                </div>
+                                <span class="font-medium">${cat.name}</span>
+                            </div>
+                            <button class="set-budget-btn border border-secondary text-secondary text-xs font-semibold py-1 px-3 rounded-full" data-category-id="${cat.id}">
+                                SET BUDGET
+                            </button>
+                        `;
+                        notBudgetedList.appendChild(notBudgetedEl);
+                    }
+                });
+                
+                totalBudgetEl.textContent = formatCurrency(totalBudget);
+                totalSpentEl.textContent = formatCurrency(totalSpent);
+                budgetedCategoriesTitle.textContent = `Budgeted categories: ${state.currentDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
+            };
+
+            const populateSelects = () => {
+                const activeAccounts = state.accounts.filter(a => !a.ignored);
+                accountSelect.innerHTML = activeAccounts.map(a => `<option value="${a.name}">${a.name}</option>`).join('') || `<option>No Accounts</option>`;
+
+                const currentType = state.currentTransaction.type;
+                const activeCategories = state.categories[currentType].filter(c => !c.ignored);
+                categorySelect.innerHTML = activeCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join('') || `<option>No Categories</option>`;
+            };
+
+            const resetTransactionModal = () => {
+                const now = new Date();
+                state.currentTransaction = {
+                    type: 'expense',
+                    amountStr: '0',
+                    date: now.toISOString().split('T')[0],
+                    time: now.toTimeString().slice(0,5),
+                };
+                amountDisplay.textContent = '0';
+                notesInput.value = '';
+                dateInputBtn.textContent = new Date(state.currentTransaction.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                timeInputBtn.textContent = formatAMPM(state.currentTransaction.time);
+                populateSelects();
+                updateModalTypeUI();
+            };
+
+            const updateModalTypeUI = () => {
+                const type = state.currentTransaction.type;
+                if (type === 'income') {
+                    incomeTab.classList.add('modal-tab-active', 'bg-green-accent', 'text-white');
+                    expenseTab.classList.remove('modal-tab-active', 'bg-red-accent', 'text-white');
+                    amountDisplay.classList.remove('text-red-accent');
+                    amountDisplay.classList.add('text-green-accent');
+                } else {
+                    expenseTab.classList.add('modal-tab-active', 'bg-red-accent', 'text-white');
+                    incomeTab.classList.remove('modal-tab-active', 'bg-green-accent', 'text-white');
+                    amountDisplay.classList.add('text-red-accent');
+                    amountDisplay.classList.remove('text-green-accent');
+                }
+                populateSelects();
+            };
+            
+            const handleKeypad = (key) => {
+                let { amountStr } = state.currentTransaction;
+                if (key === 'C') {
+                    amountStr = '0';
+                } else if (key === '=') {
+                    try {
+                        amountStr = String(eval(amountStr.replace('x', '*')) || '0');
+                    } catch (e) {
+                        amountStr = 'Error';
+                    }
+                } else if (['+', '-', '*', '/'].includes(key)) {
+                    if (amountStr !== '0' && !['+', '-', '*', '/'].includes(amountStr.slice(-1))) {
+                       amountStr += key;
+                    }
+                } else {
+                    if (amountStr === '0' || amountStr === 'Error') amountStr = key;
+                    else amountStr += key;
+                }
+                
+                state.currentTransaction.amountStr = amountStr;
+                amountDisplay.textContent = amountStr;
+            };
+
+            const handleBackspace = () => {
+                let { amountStr } = state.currentTransaction;
+                amountStr = amountStr.length > 1 ? amountStr.slice(0, -1) : '0';
+                state.currentTransaction.amountStr = amountStr;
+                amountDisplay.textContent = amountStr;
+            };
+
+            const saveTransaction = () => {
+                let amount;
+                try {
+                    amount = eval(state.currentTransaction.amountStr);
+                    if (isNaN(amount) || amount === 0) return;
+                } catch (e) {
+                    return;
+                }
+
+                if (!categorySelect.value || categorySelect.value === 'No Categories') {
+                    alert("Please create a category first.");
+                    return;
+                }
+                 if (!accountSelect.value || accountSelect.value === 'No Accounts') {
+                    alert("Please create an account first.");
+                    return;
+                }
+                
+                if (state.editingItem && state.editingItem.type === 'transaction') {
+                     const index = state.transactions.findIndex(t => t.id === state.editingItem.id);
+                     if (index > -1) {
+                         state.transactions[index] = {
+                             ...state.transactions[index], 
+                             type: state.currentTransaction.type,
+                             amount: Math.abs(amount),
+                             category: categorySelect.value,
+                             account: accountSelect.value,
+                             date: state.currentTransaction.date,
+                             time: state.currentTransaction.time,
+                             notes: notesInput.value,
+                         };
+                     }
+                } else {
+                     const newTransaction = {
+                        id: Date.now(),
+                        type: state.currentTransaction.type,
+                        amount: Math.abs(amount),
+                        category: categorySelect.value,
+                        account: accountSelect.value,
+                        date: state.currentTransaction.date,
+                        time: state.currentTransaction.time,
+                        notes: notesInput.value,
+                    };
+                    state.transactions.push(newTransaction);
+                }
+
+                state.editingItem = null; 
+                closeModal();
+                renderAll();
+            };
+            
+            const openModal = () => {
+                state.editingItem = null;
+                resetTransactionModal();
+                transactionModal.classList.remove('hidden');
+            };
+
+            const closeModal = () => transactionModal.classList.add('hidden');
+
+            const openCategoryModal = (type = 'expense', categoryToEdit = null) => {
+                state.editingItem = categoryToEdit ? { type: 'category', itemType: type, id: categoryToEdit.id } : null;
+
+                if (state.editingItem) {
+                    categoryModalTitle.textContent = 'Edit category';
+                    state.currentNewCategory = { ...categoryToEdit };
+                    catNameInput.value = categoryToEdit.name;
+                    colorPicker.value = categoryToEdit.color;
+                } else {
+                    categoryModalTitle.textContent = 'Add new category';
+                    state.currentNewCategory = { type: 'expense', name: '', icon: CATEGORY_ICONS[0], color: '#C81C1C', isCustom: false };
+                    catNameInput.value = '';
+                    colorPicker.value = '#C81C1C';
+                }
+                
+                uploadedIconPreviewContainer.classList.add('hidden');
+                uploadIconInput.value = '';
+
+                updateCatModalTypeUI();
+                renderCatIconAndColorPickers();
+                categoryModal.classList.remove('hidden');
+            };
+
+            const closeCategoryModal = () => categoryModal.classList.add('hidden');
+
+            const updateCatModalTypeUI = () => {
+                const { type } = state.currentNewCategory;
+                const incomeActiveClasses = ['modal-tab-active', 'bg-green-accent', 'text-white'];
+                const expenseActiveClasses = ['modal-tab-active', 'bg-red-accent', 'text-white'];
+
+                catIncomeTab.classList.remove(...incomeActiveClasses, ...expenseActiveClasses);
+                catExpenseTab.classList.remove(...incomeActiveClasses, ...expenseActiveClasses);
+                
+                if (type === 'income') catIncomeTab.classList.add(...incomeActiveClasses);
+                else catExpenseTab.classList.add(...expenseActiveClasses);
+            };
+            
+            const renderCatIconAndColorPickers = () => {
+                const currentCat = state.editingItem ? state.categories[state.editingItem.itemType].find(c => c.id === state.editingItem.id) : state.currentNewCategory;
+                
+                iconPicker.innerHTML = CATEGORY_ICONS.map(icon => `
+                    <button class="icon-picker-item w-10 h-10 rounded-full flex items-center justify-center bg-dark-3 ${currentCat.icon === icon && !currentCat.isCustom ? 'selected' : ''}" data-icon="${icon}">
+                        <i class="fas ${icon}"></i>
+                    </button>
+                `).join('');
+            };
+
+            const saveCategory = () => {
+                const name = catNameInput.value.trim();
+                if (!name) return;
+                
+                state.currentNewCategory.name = name;
+
+                if (state.editingItem) {
+                    const {itemType, id} = state.editingItem;
+                    const catIndex = state.categories[itemType].findIndex(c => c.id === id);
+                    if(catIndex > -1){
+                        state.categories[itemType][catIndex] = { ...state.categories[itemType][catIndex], ...state.currentNewCategory, name };
+                    }
+                } else {
+                    const newCategory = { id: Date.now(), name, ...state.currentNewCategory };
+                    state.categories[newCategory.type].push(newCategory);
+                }
+                
+                closeCategoryModal();
+                renderAll();
+            };
+            
+            const openAccountModal = (accountToEdit = null) => {
+                state.editingItem = accountToEdit ? { type: 'account', id: accountToEdit.id } : null;
+
+                if (state.editingItem) {
+                    accountModalTitle.textContent = 'Edit account';
+                    state.currentNewAccount = { ...accountToEdit };
+                    accountNameInput.value = accountToEdit.name;
+                    accountInitialAmountInput.value = accountToEdit.initialAmount;
+                    accountColorPicker.value = accountToEdit.color;
+                } else {
+                    accountModalTitle.textContent = 'Add new account';
+                    state.currentNewAccount = { name: '', icon: ACCOUNT_ICONS[0], initialAmount: 0, color: '#C81C1C', isCustom: false, ignored: false };
+                    accountNameInput.value = '';
+                    accountInitialAmountInput.value = '';
+                    accountColorPicker.value = '#C81C1C';
+                }
+                
+                uploadedAccountIconPreviewContainer.classList.add('hidden');
+                uploadAccountIconInput.value = '';
+                
+                renderAccountIconPicker();
+                accountModal.classList.remove('hidden');
+            };
+
+            const closeAccountModal = () => accountModal.classList.add('hidden');
+
+            const renderAccountIconPicker = () => {
+                const currentAcc = state.editingItem ? state.accounts.find(a => a.id === state.editingItem.id) : state.currentNewAccount;
+                accountIconPicker.innerHTML = ACCOUNT_ICONS.map(icon => `
+                    <button class="icon-picker-item w-10 h-10 rounded-full flex items-center justify-center bg-dark-3 ${currentAcc.icon === icon && !currentAcc.isCustom ? 'selected' : ''}" data-icon="${icon}">
+                        <i class="fas ${icon}"></i>
+                    </button>
+                `).join('');
+            };
+
+            const saveAccount = () => {
+                const name = accountNameInput.value.trim();
+                const initialAmount = parseFloat(accountInitialAmountInput.value) || 0;
+                if (!name) return;
+
+                state.currentNewAccount.name = name;
+                state.currentNewAccount.initialAmount = initialAmount;
+
+                if (state.editingItem) {
+                    const accIndex = state.accounts.findIndex(a => a.id === state.editingItem.id);
+                    if (accIndex > -1) {
+                         state.accounts[accIndex] = { ...state.accounts[accIndex], ...state.currentNewAccount };
+                    }
+                } else {
+                    const newAccount = { id: Date.now(), ...state.currentNewAccount };
+                    state.accounts.push(newAccount);
+                }
+                closeAccountModal();
+                renderAll();
+            };
+
+            const openSetBudgetModal = (categoryId) => {
+                const category = state.categories.expense.find(c => c.id === categoryId);
+                if (!category) return;
+                
+                state.editingBudget = { categoryId };
+
+                const iconHtml = category.isCustom 
+                    ? `<img src="${category.icon}" class="w-8 h-8 rounded-full mr-3">` 
+                    : `<div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" style="background-color:${category.color}"><i class="fas ${category.icon} text-white"></i></div>`;
+
+                budgetCategoryDisplay.innerHTML = `${iconHtml}<span>${category.name}</span>`;
+                
+                const monthKey = state.currentDate.toISOString().slice(0, 7);
+                const currentBudget = state.budgets[monthKey]?.[categoryId];
+                budgetLimitInput.value = currentBudget || '';
+
+                budgetMonthDisplay.textContent = `Month: ${state.currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+                
+                setBudgetModal.classList.remove('hidden');
+            };
+
+            const closeSetBudgetModal = () => {
+                setBudgetModal.classList.add('hidden');
+                state.editingBudget = null;
+            };
+
+            const saveBudget = () => {
+                const limit = parseFloat(budgetLimitInput.value);
+                if (isNaN(limit) || limit < 0 || !state.editingBudget) {
+                    return;
+                }
+
+                const { categoryId } = state.editingBudget;
+                const monthKey = state.currentDate.toISOString().slice(0, 7);
+                
+                if (!state.budgets[monthKey]) {
+                    state.budgets[monthKey] = {};
+                }
+                state.budgets[monthKey][categoryId] = limit;
+                
+                closeSetBudgetModal();
+                renderBudgets();
+            };
+
+            const openBudgetContextMenu = (event) => {
+                const button = event.target.closest('.budget-menu-btn');
+                if (!button) return;
+
+                if (state.editingBudget && state.editingBudget.categoryId === parseInt(button.dataset.categoryId) && !budgetContextModal.classList.contains('hidden')) {
+                    closeBudgetContextMenu();
+                    state.editingBudget = null;
+                    return;
+                }
+
+                const categoryId = parseInt(button.dataset.categoryId);
+                state.editingBudget = { categoryId };
+
+                const rect = button.getBoundingClientRect();
+                const containerRect = document.getElementById('app-container').getBoundingClientRect();
+                
+                budgetContextModal.style.top = `${rect.bottom - containerRect.top}px`;
+                budgetContextModal.style.right = `${containerRect.right - rect.right}px`;
+                budgetContextModal.style.left = 'auto'; 
+                budgetContextModal.classList.remove('hidden');
+            };
+
+            const closeBudgetContextMenu = () => {
+                 budgetContextModal.classList.add('hidden');
+            }
+
+            const removeBudget = (categoryId) => {
+                const monthKey = state.currentDate.toISOString().slice(0, 7);
+                if (state.budgets[monthKey] && state.budgets[monthKey][categoryId] !== undefined) {
+                    delete state.budgets[monthKey][categoryId];
+                    renderBudgets();
+                }
+            };
+
+            const openContextMenu = (type, id, itemType) => {
+                state.editingItem = { type, id, itemType };
+                const item = type === 'category' 
+                    ? state.categories[itemType].find(c => c.id === id) 
+                    : state.accounts.find(a => a.id === id);
+                ignoreBtn.textContent = item.ignored ? 'Un-ignore' : 'Ignore';
+                contextModal.classList.remove('hidden');
+            };
+
+            const closeContextMenu = () => {
+                contextModal.classList.add('hidden');
+                state.editingItem = null;
+            };
+
+            const openCalendarModal = (context = 'main') => {
+                state.calendarContext = context;
+                if (context === 'transaction') {
+                    state.calendarDate = new Date(state.currentTransaction.date + 'T00:00:00');
+                } else {
+                    state.calendarDate = new Date(state.currentDate);
+                }
+                renderCalendar();
+                calendarModal.classList.remove('hidden');
+            };
+
+            const closeCalendarModal = () => calendarModal.classList.add('hidden');
+
+            const renderCalendar = () => {
+                const year = state.calendarDate.getFullYear();
+                const month = state.calendarDate.getMonth();
+                calendarMonthYear.textContent = state.calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                
+                calendarDaysGrid.innerHTML = '';
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const today = new Date();
+
+                for(let i=0; i < firstDayOfMonth; i++) {
+                    calendarDaysGrid.innerHTML += `<div></div>`;
+                }
+
+                for(let i=1; i <= daysInMonth; i++) {
+                    const dayEl = document.createElement('button');
+                    dayEl.textContent = i;
+                    dayEl.className = 'calendar-day w-8 h-8 flex items-center justify-center';
+                    
+                    if (i === state.calendarDate.getDate() && month === state.calendarDate.getMonth() && year === state.calendarDate.getFullYear()) {
+                        dayEl.classList.add('selected');
+                    }
+                    if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                        dayEl.classList.add('today');
+                    }
+                    
+                    dayEl.addEventListener('click', () => {
+                        state.calendarDate.setDate(i);
+                        renderCalendar();
+                    });
+                    calendarDaysGrid.appendChild(dayEl);
+                }
+            };
+
+            const openTimePickerModal = () => {
+                const [hour, minute] = state.currentTransaction.time.split(':');
+                const hour12 = parseInt(hour) % 12 || 12;
+                const ampm = parseInt(hour) >= 12 ? 'pm' : 'am';
+                
+                timeHourInput.value = hour12;
+                timeMinuteInput.value = minute;
+                
+                if (ampm === 'pm') {
+                    timePmBtn.classList.add('selected');
+                    timeAmBtn.classList.remove('selected');
+                } else {
+                    timeAmBtn.classList.add('selected');
+                    timePmBtn.classList.remove('selected');
+                }
+
+                timePickerModal.classList.remove('hidden');
+            };
+
+            const closeTimePickerModal = () => timePickerModal.classList.add('hidden');
+
+
+            const openConfirmModal = (message, onConfirm) => {
+                confirmMessage.textContent = message;
+                state.confirmAction = onConfirm;
+                confirmModal.classList.remove('hidden');
+            };
+
+            const closeConfirmModal = () => {
+                confirmModal.classList.add('hidden');
+                state.confirmAction = null;
+            };
+
+            const markdownToHtml = (text) => {
+                const lines = text.split('\n');
+                let html = '';
+                let inList = false;
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    if (trimmedLine.startsWith('* ')) {
+                        if (!inList) {
+                            html += '<ul>';
+                            inList = true;
+                        }
+                        html += `<li>${trimmedLine.substring(2)}</li>`;
+                    } else {
+                        if (inList) {
+                            html += '</ul>';
+                            inList = false;
+                        }
+                        if (trimmedLine.length > 0) {
+                             html += `<p>${trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`;
+                        }
+                    }
+                }
+                if (inList) {
+                    html += '</ul>';
+                }
+                return html;
+            };
+
+            const callGeminiAPI = async (prompt) => {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        console.error("API Error Response:", await response.text());
+                        return "Sorry, I couldn't get any insights at the moment. The server returned an error.";
+                    }
+
+                    const result = await response.json();
+                    const candidate = result.candidates?.[0];
+
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        return candidate.content.parts[0].text;
+                    } else {
+                        console.error("Unexpected API response structure:", result);
+                        return "Sorry, I received an unexpected response from the analysis service.";
+                    }
+                } catch (error) {
+                    console.error("Error calling Gemini API:", error);
+                    return "An error occurred while trying to analyze your finances. Please check your internet connection and try again.";
+                }
+            };
+
+
+            const renderAll = () => {
+                headerSummary.classList.toggle('hidden', state.showTotal === 'no');
+                renderSummary();
+                renderRecords(null, recordsView);
+                renderCategories();
+                renderAccounts();
+                renderBudgets();
+                populateSelects();
+                updateDateDisplay();
+            }
+
+            // --- EVENT LISTENERS ---
+            addTransactionBtn.addEventListener('click', openModal);
+            addCategoryBtn.addEventListener('click', () => openCategoryModal());
+            addAccountBtn.addEventListener('click', () => openAccountModal());
+            cancelBtn.addEventListener('click', closeModal);
+            saveBtn.addEventListener('click', saveTransaction);
+            
+            backspaceBtn.addEventListener('click', handleBackspace);
+
+            keypadBtns.forEach(btn => {
+                btn.addEventListener('click', () => handleKeypad(btn.dataset.key));
+            });
+
+            incomeTab.addEventListener('click', () => { state.currentTransaction.type = 'income'; updateModalTypeUI(); });
+            expenseTab.addEventListener('click', () => { state.currentTransaction.type = 'expense'; updateModalTypeUI(); });
+            
+            dateInputBtn.addEventListener('click', () => openCalendarModal('transaction'));
+            timeInputBtn.addEventListener('click', openTimePickerModal);
+
+            cancelCatBtn.addEventListener('click', closeCategoryModal);
+            saveCatBtn.addEventListener('click', saveCategory);
+            catIncomeTab.addEventListener('click', () => { state.currentNewCategory.type = 'income'; updateCatModalTypeUI(); });
+            catExpenseTab.addEventListener('click', () => { state.currentNewCategory.type = 'expense'; updateCatModalTypeUI(); });
+            iconPicker.addEventListener('click', (e) => {
+                const target = e.target.closest('.icon-picker-item');
+                if(target) {
+                    state.currentNewCategory.icon = target.dataset.icon;
+                    state.currentNewCategory.isCustom = false;
+                    renderCatIconAndColorPickers();
+                }
+            });
+            colorPicker.addEventListener('input', (e) => {
+                state.currentNewCategory.color = e.target.value;
+            });
+
+            uploadIconInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        state.currentNewCategory.icon = event.target.result;
+                        state.currentNewCategory.isCustom = true;
+                        
+                        uploadedIconPreview.src = event.target.result;
+                        uploadedIconName.textContent = file.name;
+                        uploadedIconPreviewContainer.classList.remove('hidden');
+                        
+                        document.querySelectorAll('.icon-picker-item').forEach(el => el.classList.remove('selected'));
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            removeUploadedIconBtn.addEventListener('click', () => {
+                uploadIconInput.value = '';
+                uploadedIconPreviewContainer.classList.add('hidden');
+                state.currentNewCategory.isCustom = false;
+                state.currentNewCategory.icon = CATEGORY_ICONS[0]; 
+                renderCatIconAndColorPickers();
+            });
+
+
+            cancelAccountBtn.addEventListener('click', closeAccountModal);
+            saveAccountBtn.addEventListener('click', saveAccount);
+            accountIconPicker.addEventListener('click', (e) => {
+                const target = e.target.closest('.icon-picker-item');
+                if (target) {
+                    state.currentNewAccount.icon = target.dataset.icon;
+                    state.currentNewAccount.isCustom = false;
+                    renderAccountIconPicker();
+                }
+            });
+            accountColorPicker.addEventListener('input', (e) => {
+                state.currentNewAccount.color = e.target.value;
+            });
+
+            uploadAccountIconInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        state.currentNewAccount.icon = event.target.result;
+                        state.currentNewAccount.isCustom = true;
+                        uploadedAccountIconPreview.src = event.target.result;
+                        uploadedAccountIconName.textContent = file.name;
+                        uploadedAccountIconPreviewContainer.classList.remove('hidden');
+                        document.querySelectorAll('#account-icon-picker .icon-picker-item').forEach(el => el.classList.remove('selected'));
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            removeUploadedAccountIconBtn.addEventListener('click', () => {
+                uploadAccountIconInput.value = '';
+                uploadedAccountIconPreviewContainer.classList.add('hidden');
+                state.currentNewAccount.isCustom = false;
+                state.currentNewAccount.icon = ACCOUNT_ICONS[0];
+                renderAccountIconPicker();
+            });
+
+            budgetsView.addEventListener('click', (e) => {
+                const setBudgetBtn = e.target.closest('.set-budget-btn');
+                const budgetMenuBtn = e.target.closest('.budget-menu-btn');
+                if (setBudgetBtn) {
+                    const categoryId = parseInt(setBudgetBtn.dataset.categoryId);
+                    openSetBudgetModal(categoryId);
+                } else if (budgetMenuBtn) {
+                    openBudgetContextMenu(e);
+                }
+            });
+            cancelBudgetBtn.addEventListener('click', closeSetBudgetModal);
+            saveBudgetBtn.addEventListener('click', saveBudget);
+            
+            changeLimitBtn.addEventListener('click', () => {
+                if (state.editingBudget) {
+                    openSetBudgetModal(state.editingBudget.categoryId);
+                }
+                closeBudgetContextMenu();
+                state.editingBudget = null; 
+            });
+
+            removeBudgetBtn.addEventListener('click', () => {
+                if(state.editingBudget) {
+                    const categoryId = state.editingBudget.categoryId;
+                    openConfirmModal("Remove this budget? Budget over this category will be removed for this month, are you sure?", () => {
+                        removeBudget(categoryId);
+                    });
+                }
+                closeBudgetContextMenu();
+                state.editingBudget = null; 
+            });
+
+            document.body.addEventListener('click', (e) => {
+                const menuBtn = e.target.closest('.context-menu-btn');
+                const filterTrigger = e.target.closest('.filter-trigger');
+                const recordItem = e.target.closest('.record-item');
+
+                if (!e.target.closest('.budget-menu-btn') && !e.target.closest('#budget-context-modal')) {
+                    if (!budgetContextModal.classList.contains('hidden')) {
+                         closeBudgetContextMenu();
+                         state.editingBudget = null;
+                    }
+                }
+
+                if (menuBtn) {
+                    const itemEl = menuBtn.closest('.item-container');
+                    const id = parseInt(itemEl.dataset.id);
+                    const type = itemEl.dataset.type;
+                    const itemType = itemEl.dataset.itemType; 
+                    openContextMenu(type, id, itemType);
+                } else if(filterTrigger) {
+                    state.filter.type = filterTrigger.dataset.filterType;
+                    state.filter.value = filterTrigger.dataset.filterValue;
+                    document.querySelector('.tab-btn[data-view="records-view"]').click();
+                    renderAll();
+                } else if(recordItem) {
+                    const recordId = parseInt(recordItem.dataset.id);
+                    const record = state.transactions.find(t => t.id === recordId);
+                    if (record) openRecordDetailModal(record);
+                }
+            });
+
+            editBtn.addEventListener('click', () => {
+                const { type, id, itemType } = state.editingItem;
+                if (type === 'category') {
+                    const category = state.categories[itemType].find(c => c.id === id);
+                    openCategoryModal(itemType, category);
+                } else { 
+                    const account = state.accounts.find(a => a.id === id);
+                    openAccountModal(account);
+                }
+                closeContextMenu();
+            });
+
+            ignoreBtn.addEventListener('click', () => {
+                const { type, id, itemType } = state.editingItem;
+                if (type === 'category') {
+                    const catIndex = state.categories[itemType].findIndex(c => c.id === id);
+                    if (catIndex > -1) state.categories[itemType][catIndex].ignored = !state.categories[itemType][catIndex].ignored;
+                } else { 
+                    const accIndex = state.accounts.findIndex(a => a.id === id);
+                    if (accIndex > -1) state.accounts[accIndex].ignored = !state.accounts[accIndex].ignored;
+                }
+                closeContextMenu();
+                renderAll();
+            });
+
+            deleteBtn.addEventListener('click', () => {
+                const itemToDelete = { ...state.editingItem };
+                closeContextMenu();
+                openConfirmModal(`Delete this ${itemToDelete.type}? This cannot be undone.`, () => {
+                    if (itemToDelete.type === 'category') {
+                        state.categories[itemToDelete.itemType] = state.categories[itemToDelete.itemType].filter(c => c.id !== itemToDelete.id);
+                    } else { 
+                        const accountToDelete = state.accounts.find(a => a.id === itemToDelete.id);
+                        if (accountToDelete) {
+                             state.transactions = state.transactions.filter(t => t.account !== accountToDelete.name);
+                             state.accounts = state.accounts.filter(a => a.id !== itemToDelete.id);
+                        }
+                    }
+                    renderAll();
+                });
+            });
+
+            cancelContextBtn.addEventListener('click', closeContextMenu);
+
+            confirmNoBtn.addEventListener('click', closeConfirmModal);
+            confirmYesBtn.addEventListener('click', () => {
+                if (state.confirmAction) {
+                    state.confirmAction();
+                }
+                closeConfirmModal();
+            });
+
+            currentDateDisplay.addEventListener('click', () => {
+                if (state.filter.type) {
+                    state.filter = { type: null, value: null };
+                    renderAll();
+                } else {
+                    openCalendarModal('main');
+                }
+            });
+            prevDateBtn.addEventListener('click', () => {
+                if (state.filter.type) return;
+                const now = state.currentDate;
+                switch(state.displayMode) {
+                    case 'daily': now.setDate(now.getDate() - 1); break;
+                    case 'weekly': now.setDate(now.getDate() - 7); break;
+                    case 'monthly': now.setMonth(now.getMonth() - 1); break;
+                    case 'yearly': now.setFullYear(now.getFullYear() - 1); break;
+                    default: now.setMonth(now.getMonth() - parseInt(state.displayMode.replace('months', ''))); break;
+                }
+                renderAll();
+            });
+            nextDateBtn.addEventListener('click', () => {
+                if (state.filter.type) return;
+                 const now = state.currentDate;
+                switch(state.displayMode) {
+                    case 'daily': now.setDate(now.getDate() + 1); break;
+                    case 'weekly': now.setDate(now.getDate() + 7); break;
+                    case 'monthly': now.setMonth(now.getMonth() + 1); break;
+                    case 'yearly': now.setFullYear(now.getFullYear() + 1); break;
+                    default: now.setMonth(now.getMonth() + parseInt(state.displayMode.replace('months', ''))); break;
+                }
+                renderAll();
+            });
+            displayOptionsBtn.addEventListener('click', () => displayOptionsModal.classList.remove('hidden'));
+            displayOptionsModal.addEventListener('click', (e) => {
+                const displayOption = e.target.closest('.display-option');
+                const totalOption = e.target.closest('.show-total-option');
+
+                if (displayOption) {
+                    state.displayMode = displayOption.dataset.mode;
+                    document.querySelectorAll('.display-option').forEach(el => el.classList.remove('selected'));
+                    displayOption.classList.add('selected');
+                    state.filter = { type: null, value: null }; 
+                    renderAll();
+                } else if(totalOption) {
+                    state.showTotal = totalOption.dataset.total;
+                    document.querySelectorAll('.show-total-option').forEach(el => el.classList.remove('selected'));
+                    totalOption.classList.add('selected');
+                    renderAll();
+                }
+                
+                if (!e.target.closest('.bg-dark-2')) {
+                    displayOptionsModal.classList.add('hidden');
+                }
+            });
+            
+            calendarPrevMonthBtn.addEventListener('click', () => {
+                state.calendarDate.setMonth(state.calendarDate.getMonth() - 1);
+                renderCalendar();
+            });
+            calendarNextMonthBtn.addEventListener('click', () => {
+                state.calendarDate.setMonth(state.calendarDate.getMonth() + 1);
+                renderCalendar();
+            });
+            calendarCancelBtn.addEventListener('click', closeCalendarModal);
+            calendarOkBtn.addEventListener('click', () => {
+                if (state.calendarContext === 'main') {
+                    state.currentDate = new Date(state.calendarDate);
+                    renderAll();
+                } else { 
+                    state.currentTransaction.date = state.calendarDate.toISOString().split('T')[0];
+                    dateInputBtn.textContent = new Date(state.currentTransaction.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                }
+                closeCalendarModal();
+            });
+            
+            timeAmBtn.addEventListener('click', () => {
+                timeAmBtn.classList.add('selected');
+                timePmBtn.classList.remove('selected');
+            });
+            timePmBtn.addEventListener('click', () => {
+                timePmBtn.classList.add('selected');
+                timeAmBtn.classList.remove('selected');
+            });
+            timePickerCancelBtn.addEventListener('click', closeTimePickerModal);
+            timePickerOkBtn.addEventListener('click', () => {
+                let hour = parseInt(timeHourInput.value);
+                let minute = parseInt(timeMinuteInput.value);
+                const isPm = timePmBtn.classList.contains('selected');
+
+                if (isNaN(hour) || isNaN(minute) || hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+                    return;
+                }
+
+                if (isPm && hour < 12) hour += 12;
+                if (!isPm && hour === 12) hour = 0; 
+                
+                const formattedHour = String(hour).padStart(2, '0');
+                const formattedMinute = String(minute).padStart(2, '0');
+
+                state.currentTransaction.time = `${formattedHour}:${formattedMinute}`;
+                timeInputBtn.textContent = formatAMPM(state.currentTransaction.time);
+                closeTimePickerModal();
+            });
+
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('tab-active'));
+                    mainViews.forEach(view => view.classList.add('hidden'));
+
+                    button.classList.add('tab-active');
+                    const viewId = button.getAttribute('data-view');
+                    document.getElementById(viewId).classList.remove('hidden');
+                    
+                    addTransactionBtn.classList.toggle('hidden', viewId !== 'records-view');
+                    addCategoryBtn.classList.toggle('hidden', viewId !== 'categories-view');
+                    addAccountBtn.classList.toggle('hidden', viewId !== 'accounts-view');
+                });
+            });
+            
+            searchBtn.addEventListener('click', () => searchView.classList.remove('hidden'));
+            closeSearchBtn.addEventListener('click', () => searchView.classList.add('hidden'));
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                renderRecords([], searchResultsContainer);
+            });
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                if (query.length > 0) {
+                    const results = state.transactions.filter(t => 
+                        (t.notes && t.notes.toLowerCase().includes(query)) ||
+                        t.category.toLowerCase().includes(query) ||
+                        t.account.toLowerCase().includes(query)
+                    );
+                    renderRecords(results, searchResultsContainer);
+                } else {
+                     renderRecords([], searchResultsContainer);
+                }
+            });
+
+            recordDetailModal.addEventListener('click', (e) => {
+                const target = e.target;
+                const closeBtn = target.closest('#close-record-detail-btn');
+                const editBtn = target.closest('#edit-record-btn');
+                const deleteBtn = target.closest('#delete-record-btn');
+    
+                if (closeBtn) {
+                    recordDetailModal.classList.add('hidden');
+                } else if (deleteBtn) {
+                    recordDetailModal.classList.add('hidden');
+                    openConfirmModal('Delete this transaction? This cannot be undone.', () => {
+                        if (state.editingItem && state.editingItem.type === 'transaction') {
+                            state.transactions = state.transactions.filter(t => t.id !== state.editingItem.id);
+                            state.editingItem = null;
+                            renderAll();
+                        }
+                    });
+                } else if (editBtn) {
+                    if (!state.editingItem || state.editingItem.type !== 'transaction') return;
+                    const recordToEdit = state.transactions.find(t => t.id === state.editingItem.id);
+                    if (!recordToEdit) return;
+    
+                    recordDetailModal.classList.add('hidden');
+                    
+                    state.currentTransaction = { ...recordToEdit, amountStr: String(recordToEdit.amount) };
+                    
+                    amountDisplay.textContent = state.currentTransaction.amountStr;
+                    notesInput.value = state.currentTransaction.notes;
+                    dateInputBtn.textContent = new Date(state.currentTransaction.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    timeInputBtn.textContent = formatAMPM(state.currentTransaction.time);
+                    
+                    updateModalTypeUI();
+                    accountSelect.value = state.currentTransaction.account;
+                    categorySelect.value = state.currentTransaction.category;
+    
+                    transactionModal.classList.remove('hidden');
+                }
+            });
+
+            analyzeSpendingBtn.addEventListener('click', async () => {
+                analysisPlaceholder.classList.add('hidden');
+                analysisResults.classList.add('hidden');
+                analysisLoader.classList.remove('hidden');
+                analyzeSpendingBtn.disabled = true;
+                analyzeSpendingBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                const transactions = getFilteredTransactions();
+
+                if (transactions.length === 0) {
+                    analysisResults.innerHTML = '<p>Not enough data to analyze. Please add some transactions for this period.</p>';
+                    analysisLoader.classList.add('hidden');
+                    analysisResults.classList.remove('hidden');
+                    analyzeSpendingBtn.disabled = false;
+                    analyzeSpendingBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    return;
+                }
+
+                const transactionList = transactions.map(t =>
+                    `- ${t.type.charAt(0).toUpperCase() + t.type.slice(1)}: ${formatCurrency(t.amount)} on ${t.category} (${t.date})`
+                ).join('\n');
+
+                const prompt = `
+                    You are a friendly and insightful financial assistant.
+                    Analyze the following list of financial transactions and provide a summary of spending habits for a user in the Philippines (currency is Philippine Peso - ₱).
+                    
+                    The analysis should be concise, easy to read, and encouraging. Please structure your response with the following sections using this exact markdown format:
+                    **Spending Summary**
+                    A brief, one-paragraph overview of the total income vs. expense.
+
+                    **Top Spending Categories**
+                    * A bulleted list of the top 3-5 expense categories.
+
+                    **Key Insights & Suggestions**
+                    * A bulleted list with 2-3 actionable insights or suggestions for potential savings based on the data. For example, if there are many 'food' expenses, suggest cooking at home more often.
+
+                    **A Positive Wrap-up**
+                    A short, encouraging final sentence.
+                    
+                    Here are the transactions:
+                    ${transactionList}
+                `;
+
+                const resultText = await callGeminiAPI(prompt);
+                const resultHtml = markdownToHtml(resultText);
+
+                analysisResults.innerHTML = resultHtml;
+                analysisLoader.classList.add('hidden');
+                analysisResults.classList.remove('hidden');
+                analyzeSpendingBtn.disabled = false;
+                analyzeSpendingBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
+
+
+            const openRecordDetailModal = (record) => {
+                state.editingItem = { type: 'transaction', id: record.id };
+                const header = recordDetailModal.querySelector('#record-detail-header');
+                const typeEl = header.querySelector('p:nth-of-type(1)');
+                const amountEl = header.querySelector('p:nth-of-type(2)');
+                const dateEl = header.querySelector('span:nth-of-type(1)');
+                const timeEl = header.querySelector('span:nth-of-type(2)');
+
+                header.className = `p-4 rounded-t-xl ${record.type === 'income' ? 'bg-green-accent' : 'bg-red-accent'}`;
+                typeEl.textContent = record.type.toUpperCase();
+                amountEl.textContent = formatCurrency(record.amount);
+                dateEl.textContent = new Date(record.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                timeEl.textContent = formatAMPM(record.time);
+                
+                document.getElementById('record-detail-account').textContent = record.account;
+                document.getElementById('record-detail-category').textContent = record.category;
+                document.getElementById('record-detail-notes').textContent = record.notes || 'No notes';
+
+
+                recordDetailModal.classList.remove('hidden');
+            };
+
+            // --- INITIALIZATION ---
+            document.querySelector(`.display-option[data-mode="${state.displayMode}"]`).classList.add('selected');
+            document.querySelector(`.show-total-option[data-total="${state.showTotal}"]`).classList.add('selected');
+            renderAll();
+        });
+    </script>
+</body>
+</html>
+
