@@ -10,104 +10,199 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-dark-1: #121212;
+            --bg-dark-2: #1E1E1E;
+            --bg-dark-3: #2C2C2E;
+            --bg-dark-4: #3A3A3C;
+            --border-dark: #3A3A3C;
+            --text-primary: #E0E0E0;
+            --text-secondary: #8E8E93;
+            --accent-green: #34C759;
+            --accent-red: #FF3B30;
+            --accent-blue: #0A84FF;
+        }
+
+        .theme-light {
+            --bg-dark-1: #F2F2F7;
+            --bg-dark-2: #FFFFFF;
+            --bg-dark-3: #E5E5EA;
+            --bg-dark-4: #D1D1D6;
+            --border-dark: #C6C6C8;
+            --text-primary: #000000;
+            --text-secondary: #636366;
+        }
+        
+        /* Windows 11 Inspired Themes */
+        .theme-sunrise { --accent-blue: #FF8C00; --accent-red: #E53935; --accent-green: #43A047; }
+        .theme-ocean { --accent-blue: #1E90FF; --accent-red: #FF4500; --accent-green: #2E8B57; }
+        .theme-forest { --accent-blue: #228B22; --accent-red: #B22222; --accent-green: #3CB371; }
+        .theme-twilight { --accent-blue: #8A2BE2; --accent-red: #DC143C; --accent-green: #7FFF00; }
+        .theme-sakura { --accent-blue: #FFB6C1; --accent-red: #DB7093; --accent-green: #98FB98; --text-primary: #333; --text-secondary: #555; }
+
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #121212;
-            color: #E0E0E0;
+            background-color: var(--bg-dark-1);
+            color: var(--text-primary);
         }
-        .bg-dark { background-color: #1E1E1E; }
-        .bg-dark-2 { background-color: #2C2C2E; }
-        .bg-dark-3 { background-color: #3A3A3C; }
-        .border-dark { border-color: #3A3A3C; }
-        .text-green-accent { color: #34C759; }
-        .text-red-accent { color: #FF3B30; }
-        .text-blue-accent { color: #0A84FF; }
-        .bg-green-accent { background-color: #34C759; }
-        .bg-red-accent { background-color: #FF3B30; }
-        .text-secondary { color: #8E8E93; }
-        .tab-active { color: #0A84FF; border-bottom: 2px solid #0A84FF; }
+        .bg-dark { background-color: var(--bg-dark-1); }
+        .bg-dark-2 { background-color: var(--bg-dark-2); }
+        .bg-dark-3 { background-color: var(--bg-dark-3); }
+        .bg-dark-4 { background-color: var(--bg-dark-4); }
+        .border-dark { border-color: var(--border-dark); }
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-green-accent { color: var(--accent-green); }
+        .text-red-accent { color: var(--accent-red); }
+        .text-blue-accent { color: var(--accent-blue); }
+        .bg-green-accent { background-color: var(--accent-green); }
+        .bg-red-accent { background-color: var(--accent-red); }
+        .bg-blue-accent { background-color: var(--accent-blue); }
+        
+        .tab-active { color: var(--accent-blue); border-bottom: 2px solid var(--accent-blue); }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #3A3A3C; border-radius: 10px; }
-        .modal-keypad button {
-            transition: background-color 0.2s;
+        ::-webkit-scrollbar-thumb { background: var(--bg-dark-4); border-radius: 10px; }
+        .modal-keypad button:active { background-color: #555; }
+        
+        .animate-modal-open { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .animate-modal-center-open { animation: fadeInScale 0.3s ease-out forwards; }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .icon-picker-item.selected { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+        .category-ignored, .account-ignored { opacity: 0.5; }
+        .display-option.selected, .theme-option.selected { color: var(--accent-blue); font-weight: 600; }
+        .calendar-day.selected { background-color: var(--accent-blue); color: white !important; border-radius: 50%; }
+        .calendar-day.today { border: 1px solid var(--accent-blue); border-radius: 50%; }
+        .time-ampm-btn.selected { background-color: var(--accent-blue); color: white; }
+        
+        input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+        
+        .progress-bar-inner { transition: width 0.5s ease-in-out; }
+        
+        /* Sidebar Styles */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
         }
-        .modal-keypad button:active {
-            background-color: #555;
+        #app-wrapper.sidebar-open #sidebar {
+            transform: translateX(0);
         }
-        .animate-modal-open {
-            animation: slideUp 0.3s ease-out forwards;
+        #app-wrapper.sidebar-open #app-container {
+            transform: translateX(256px); /* Same as sidebar width */
         }
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+        #app-container {
+            transition: transform 0.3s ease-in-out;
         }
-        .animate-modal-center-open {
-            animation: fadeInScale 0.3s ease-out forwards;
+        .toggle-checkbox:checked { right: 0; border-color: var(--accent-blue); } 
+        .toggle-checkbox:checked + .toggle-label { background-color: var(--accent-blue); }
+
+        /* Custom Select Styles */
+        .custom-select-option {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-dark);
         }
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        .custom-select-option:last-child {
+            border-bottom: none;
         }
-        .icon-picker-item.selected, .color-picker-item.selected {
-            outline: 2px solid #0A84FF;
-            outline-offset: 2px;
+        .custom-select-option:hover {
+            background-color: var(--bg-dark-3);
         }
-        .category-ignored, .account-ignored {
-            opacity: 0.5;
-        }
-        .display-option.selected {
-            color: #0A84FF;
-            font-weight: 600;
-        }
-        .calendar-day.selected {
-            background-color: #0A84FF;
-            color: white;
+        .custom-select-option .radio-circle {
+            width: 1.25rem;
+            height: 1.25rem;
             border-radius: 50%;
+            border: 2px solid var(--text-secondary);
+            margin-right: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
-         .calendar-day.today {
-            border: 1px solid #0A84FF;
+        .custom-select-option.selected .radio-circle {
+            border-color: var(--accent-blue);
+            background-color: var(--accent-blue);
+        }
+        .custom-select-option.selected .radio-circle::after {
+            content: '';
+            width: 0.5rem;
+            height: 0.5rem;
             border-radius: 50%;
+            background-color: white;
         }
-        .time-ampm-btn.selected {
-            background-color: #0A84FF;
-            color: white;
+        .spinner {
+            animation: spin 1s linear infinite;
         }
-        input[type="color"] {
-            -webkit-appearance: none;
-            border: none;
-            width: 40px;
-            height: 40px;
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
-        input[type="color"]::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-        input[type="color"]::-webkit-color-swatch {
-            border: none;
-            border-radius: 50%;
-        }
-        .progress-bar-inner {
-            transition: width 0.5s ease-in-out;
-        }
-        .budget-context-menu {
-            position: absolute;
-            z-index: 60;
-        }
+
     </style>
 </head>
 <body class="overscroll-none">
 
-    <div id="app-container" class="max-w-md mx-auto h-screen flex flex-col bg-dark overflow-hidden shadow-2xl relative">
+<div id="app-wrapper" class="relative max-w-md mx-auto h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="absolute top-0 left-0 w-64 h-full bg-dark-2 z-40 shadow-xl p-4 flex flex-col">
+        <div>
+            <h2 class="text-xl font-bold mb-6">Settings</h2>
+            <nav class="space-y-2">
+                <button data-screen="themes-screen" class="sidebar-btn w-full text-left p-3 rounded-lg hover:bg-dark-3 flex items-center">
+                    <i class="fas fa-palette w-6 mr-3"></i> Themes
+                </button>
+                <button data-screen="ui-mode-screen" class="sidebar-btn w-full text-left p-3 rounded-lg hover:bg-dark-3 flex items-center">
+                    <i class="fas fa-adjust w-6 mr-3"></i> UI Mode
+                </button>
+                <button data-screen="currency-screen" class="sidebar-btn w-full text-left p-3 rounded-lg hover:bg-dark-3 flex items-center">
+                    <i class="fas fa-dollar-sign w-6 mr-3"></i> Currency
+                </button>
+                <button data-screen="import-screen" class="sidebar-btn w-full text-left p-3 rounded-lg hover:bg-dark-3 flex items-center">
+                    <i class="fas fa-robot w-6 mr-3"></i> Import from CSV
+                </button>
+                <button data-screen="export-screen" class="sidebar-btn w-full text-left p-3 rounded-lg hover:bg-dark-3 flex items-center">
+                    <i class="fas fa-file-csv w-6 mr-3"></i> Export to CSV
+                </button>
+                 <button data-screen="sync-screen" class="sidebar-btn w-full text-left p-3 rounded-lg hover:bg-dark-3 flex items-center">
+                    <i class="fas fa-sync-alt w-6 mr-3"></i> Login & Sync
+                </button>
+                <button data-screen="reset-screen" class="sidebar-btn w-full text-left p-3 rounded-lg hover:bg-dark-3 flex items-center text-red-accent">
+                    <i class="fas fa-trash-alt w-6 mr-3"></i> Delete & Reset
+                </button>
+            </nav>
+        </div>
+        <div id="user-profile-sidebar" class="mt-auto p-2 bg-dark-3 rounded-lg hidden">
+            <p class="text-sm font-semibold truncate" id="user-email-display"></p>
+            <button id="logout-btn" class="text-xs text-red-accent hover:underline">Logout</button>
+        </div>
+    </aside>
+
+    <div id="app-container" class="w-full h-screen flex flex-col bg-dark overflow-hidden shadow-2xl relative">
+        <!-- Global Loader -->
+        <div id="global-loader" class="hidden absolute inset-0 bg-black bg-opacity-70 z-50 flex-col items-center justify-center">
+            <i class="fas fa-spinner spinner text-4xl text-white"></i>
+            <p id="global-loader-message" class="text-white mt-4">Loading...</p>
+        </div>
+
         <!-- Header -->
         <header id="main-header" class="bg-dark-2 p-4 shadow-md z-10">
             <div class="flex justify-between items-center mb-4">
-                 <div class="flex items-center gap-4">
+                 <div class="flex items-center gap-2">
+                    <button id="sidebar-toggle-btn" class="text-secondary text-xl p-2 -ml-2"><i class="fas fa-bars"></i></button>
                     <button id="prev-date-btn" class="text-secondary text-xl"><i class="fas fa-chevron-left"></i></button>
                     <button id="current-date-display" class="font-semibold text-lg">August, 2025</button>
                     <button id="next-date-btn" class="text-secondary text-xl"><i class="fas fa-chevron-right"></i></button>
                  </div>
                 <div class="flex items-center">
                     <button id="search-btn" class="text-secondary text-xl mr-4"><i class="fas fa-search"></i></button>
-                    <button id="display-options-btn" class="text-secondary text-xl"><i class="fas fa-bars"></i></button>
+                    <button id="display-options-btn" class="text-secondary text-xl"><i class="fas fa-ellipsis-v"></i></button>
                 </div>
             </div>
             <div id="header-summary" class="grid grid-cols-3 gap-2 text-center text-sm">
@@ -147,6 +242,129 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Sidebar Screens -->
+        <div id="themes-screen" class="settings-screen hidden absolute inset-0 bg-dark z-30 flex flex-col p-4 overflow-y-auto">
+            <div class="flex items-center mb-6">
+                <button class="close-settings-btn text-secondary mr-4"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="text-xl font-bold">Themes</h2>
+            </div>
+            <div class="space-y-3">
+                <button class="theme-option w-full text-left p-3 rounded-lg hover:bg-dark-3" data-theme="default">Default Dark</button>
+                <button class="theme-option w-full text-left p-3 rounded-lg hover:bg-dark-3" data-theme="sunrise">Sunrise</button>
+                <button class="theme-option w-full text-left p-3 rounded-lg hover:bg-dark-3" data-theme="ocean">Ocean</button>
+                <button class="theme-option w-full text-left p-3 rounded-lg hover:bg-dark-3" data-theme="forest">Forest</button>
+                <button class="theme-option w-full text-left p-3 rounded-lg hover:bg-dark-3" data-theme="twilight">Twilight</button>
+                 <button class="theme-option w-full text-left p-3 rounded-lg hover:bg-dark-3" data-theme="sakura">Sakura</button>
+            </div>
+        </div>
+
+        <div id="ui-mode-screen" class="settings-screen hidden absolute inset-0 bg-dark z-30 flex flex-col p-4">
+            <div class="flex items-center mb-6">
+                <button class="close-settings-btn text-secondary mr-4"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="text-xl font-bold">UI Mode</h2>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-dark-2 rounded-lg">
+                <span>Light Mode</span>
+                <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                    <input type="checkbox" name="toggle" id="light-mode-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                    <label for="light-mode-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-dark-4 cursor-pointer"></label>
+                </div>
+            </div>
+        </div>
+
+        <div id="import-screen" class="settings-screen hidden absolute inset-0 bg-dark z-30 flex flex-col p-4">
+            <div class="flex items-center mb-6">
+                <button class="close-settings-btn text-secondary mr-4"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="text-xl font-bold">AI CSV Import</h2>
+            </div>
+            <div class="space-y-4 text-center">
+                <i class="fas fa-robot text-blue-accent text-5xl mb-4"></i>
+                <h3 class="text-lg font-semibold">Import Your Data with AI</h3>
+                <p class="text-secondary text-sm">Upload a CSV file of your transactions. Our AI will analyze, categorize, and import your financial data automatically.</p>
+                <input type="file" id="import-csv-input" class="hidden" accept=".csv">
+                <label for="import-csv-input" class="w-full block text-center bg-blue-accent text-white font-bold py-3 px-4 rounded-lg cursor-pointer hover:opacity-90">
+                    Upload CSV File
+                </label>
+            </div>
+        </div>
+
+         <div id="export-screen" class="settings-screen hidden absolute inset-0 bg-dark z-30 flex flex-col p-4">
+            <div class="flex items-center mb-6">
+                <button class="close-settings-btn text-secondary mr-4"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="text-xl font-bold">Export to CSV</h2>
+            </div>
+            <div class="space-y-4 text-center">
+                <i class="fas fa-file-csv text-green-accent text-5xl mb-4"></i>
+                <h3 class="text-lg font-semibold">Export Your Data</h3>
+                <p class="text-secondary text-sm">Download all of your transaction data into a single CSV file, ready for spreadsheets or other financial tools.</p>
+                <button id="export-csv-btn" class="w-full bg-green-accent text-white font-bold py-3 px-4 rounded-lg hover:opacity-90">
+                    Export All Data
+                </button>
+            </div>
+        </div>
+
+        <div id="sync-screen" class="settings-screen hidden absolute inset-0 bg-dark z-30 flex flex-col p-4">
+             <div class="flex items-center mb-6">
+                <button class="close-settings-btn text-secondary mr-4"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="text-xl font-bold">Login & Sync</h2>
+            </div>
+            <div id="auth-container" class="space-y-4">
+                <!-- Logged Out View -->
+                <div id="logged-out-view">
+                    <p class="text-secondary text-sm mb-4">Sign in to sync your data across all your devices securely.</p>
+                    <div class="space-y-3">
+                         <button id="google-signin-btn" class="w-full bg-white text-black font-semibold py-3 px-4 rounded-lg hover:opacity-90 flex items-center justify-center">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5 mr-3" alt="Google icon"> Sign in with Google
+                        </button>
+                        <div class="my-4 flex items-center">
+                            <hr class="flex-grow border-dark"><span class="px-2 text-secondary text-xs">OR</span><hr class="flex-grow border-dark">
+                        </div>
+                        <input id="email-input" type="email" placeholder="Email" class="w-full bg-dark-3 p-3 rounded-md outline-none focus:ring-2 focus:ring-blue-accent">
+                        <input id="password-input" type="password" placeholder="Password" class="w-full bg-dark-3 p-3 rounded-md outline-none focus:ring-2 focus:ring-blue-accent">
+                        <button id="email-signup-btn" class="w-full bg-blue-accent text-white font-bold py-3 px-4 rounded-lg hover:opacity-90">Sign Up / Login with Email</button>
+                        <p class="text-xs text-red-accent text-center h-4" id="auth-error-message"></p>
+                    </div>
+                </div>
+                <!-- Logged In View -->
+                <div id="logged-in-view" class="hidden text-center">
+                    <i class="fas fa-check-circle text-green-accent text-5xl mb-4"></i>
+                    <h3 class="text-lg font-semibold">You are logged in!</h3>
+                    <p class="text-secondary">Your data is now syncing automatically across your devices.</p>
+                    <p class="text-sm mt-2 truncate" id="logged-in-email"></p>
+                    <button id="main-logout-btn" class="mt-4 w-full bg-red-accent text-white font-bold py-3 px-4 rounded-lg hover:opacity-90">Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="currency-screen" class="settings-screen hidden absolute inset-0 bg-dark z-30 flex flex-col p-4">
+            <div class="flex items-center mb-6">
+                <button class="close-settings-btn text-secondary mr-4"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="text-xl font-bold">Currency Symbol</h2>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label for="currency-input" class="text-secondary text-sm mb-2 block">Enter your currency symbol:</label>
+                    <input id="currency-input" type="text" class="w-full bg-dark-3 p-3 rounded-md outline-none focus:ring-2 focus:ring-blue-accent text-center text-2xl font-bold" maxlength="5">
+                </div>
+                <button id="save-currency-btn" class="w-full bg-blue-accent text-white font-bold py-3 px-4 rounded-lg hover:opacity-90">Save Symbol</button>
+                <p class="text-sm text-secondary text-center">Your new symbol will appear throughout the app.</p>
+            </div>
+        </div>
+
+        <div id="reset-screen" class="settings-screen hidden absolute inset-0 bg-dark z-30 flex flex-col p-4">
+            <div class="flex items-center mb-6">
+                <button class="close-settings-btn text-secondary mr-4"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="text-xl font-bold">Delete & Reset</h2>
+            </div>
+            <div class="space-y-4 text-center">
+                 <i class="fas fa-exclamation-triangle text-red-accent text-5xl mb-4"></i>
+                 <h3 class="text-lg font-semibold">DANGER ZONE</h3>
+                 <p class="text-secondary">This action will permanently delete all your data from your account. This cannot be undone.</p>
+                <button id="delete-all-data-btn" class="w-full bg-red-accent text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 mt-4">DELETE ALL DATA</button>
+            </div>
+        </div>
+
 
         <!-- Placeholder views for other tabs -->
         <main id="analysis-view" class="hidden flex-1 overflow-y-auto p-4">
@@ -242,6 +460,7 @@
         </nav>
     </div>
     
+    <!-- MODALS -->
     <!-- Record Detail Modal -->
     <div id="record-detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
         <div class="bg-dark-2 w-full max-w-sm mx-auto rounded-xl animate-modal-center-open shadow-lg relative">
@@ -291,13 +510,25 @@
             </header>
             
             <div class="p-4 space-y-4 flex-1 flex flex-col">
-                <div class="grid grid-cols-2 gap-2">
-                    <select id="account-select" class="bg-dark-3 p-3 rounded-lg w-full text-center outline-none">
-                        <!-- Options populated by JS -->
-                    </select>
-                    <select id="category-select" class="bg-dark-3 p-3 rounded-lg w-full text-center outline-none">
-                       <!-- Options populated by JS -->
-                    </select>
+                <div class="grid grid-cols-2 gap-2 relative z-10">
+                    <!-- Custom Account Select -->
+                    <div class="relative">
+                        <button id="account-select-btn" class="bg-dark-3 p-3 rounded-lg w-full flex items-center justify-between text-left">
+                            <!-- Selected account will be populated by JS -->
+                        </button>
+                        <div id="account-select-panel" class="hidden absolute top-full mt-1 w-full bg-dark-4 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                            <!-- Account options will be populated by JS -->
+                        </div>
+                    </div>
+                    <!-- Custom Category Select -->
+                    <div class="relative">
+                        <button id="category-select-btn" class="bg-dark-3 p-3 rounded-lg w-full flex items-center justify-between text-left">
+                            <!-- Selected category will be populated by JS -->
+                        </button>
+                        <div id="category-select-panel" class="hidden absolute top-full mt-1 w-full bg-dark-4 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                            <!-- Category options will be populated by JS -->
+                        </div>
+                    </div>
                 </div>
 
                 <textarea id="notes-input" class="bg-dark-3 p-3 rounded-lg w-full h-24 resize-none outline-none" placeholder="Add Notes"></textarea>
@@ -330,8 +561,9 @@
                     <button class="keypad-btn bg-dark-3 rounded-lg" data-key="3">3</button>
                     
                     <button class="keypad-btn bg-dark-3 rounded-lg" data-key="/">/</button>
-                    <button class="keypad-btn bg-dark-3 rounded-lg col-span-2" data-key="0">0</button>
+                    <button class="keypad-btn bg-dark-3 rounded-lg" data-key="0">0</button>
                     <button class="keypad-btn bg-dark-3 rounded-lg" data-key=".">.</button>
+                    <button class="keypad-btn bg-blue-accent text-white rounded-lg" data-key="=">=</button>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-2 text-center text-sm">
@@ -380,7 +612,7 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-px mt-auto">
-                <button id="cancel-cat-btn" class="bg-dark-3 text-secondary py-3 rounded-bl-xl hover:bg-opacity-80 font-semibold">Cancel</button>
+                <button id="cancel-cat-btn" class="bg-dark-4 text-secondary py-3 rounded-bl-xl hover:bg-opacity-80 font-semibold">Cancel</button>
                 <button id="save-cat-btn" class="bg-blue-accent text-white py-3 rounded-br-xl font-bold hover:bg-opacity-80">Save</button>
             </div>
         </div>
@@ -418,7 +650,7 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-px mt-auto">
-                <button id="cancel-account-btn" class="bg-dark-3 text-secondary py-3 rounded-bl-xl hover:bg-opacity-80 font-semibold">Cancel</button>
+                <button id="cancel-account-btn" class="bg-dark-4 text-secondary py-3 rounded-bl-xl hover:bg-opacity-80 font-semibold">Cancel</button>
                 <button id="save-account-btn" class="bg-blue-accent text-white py-3 rounded-br-xl font-bold hover:bg-opacity-80">Save</button>
             </div>
         </div>
@@ -435,12 +667,6 @@
                 <button id="cancel-context-btn" class="w-full text-left p-3 hover:bg-dark-3 rounded-lg">Cancel</button>
             </div>
          </div>
-    </div>
-
-    <!-- Budget Context Menu -->
-    <div id="budget-context-modal" class="hidden bg-dark-3 w-40 rounded-lg shadow-lg p-2 budget-context-menu">
-        <button id="change-limit-btn" class="w-full text-left p-2 hover:bg-dark-2 rounded-md text-sm">Change limit</button>
-        <button id="remove-budget-btn" class="w-full text-left p-2 hover:bg-dark-2 rounded-md text-sm text-red-accent">Remove budget</button>
     </div>
     
     <!-- Display Options Modal -->
@@ -516,7 +742,7 @@
             <input id="budget-limit-input" type="number" placeholder="Limit" class="w-full bg-dark-3 p-3 rounded-md outline-none focus:ring-2 focus:ring-blue-accent mb-2 text-center">
             <p id="budget-month-display" class="text-secondary text-sm mb-4"></p>
             <div class="flex justify-center gap-4">
-                <button id="cancel-budget-btn" class="bg-dark-3 text-secondary py-2 px-6 rounded-lg hover:bg-opacity-80">Cancel</button>
+                <button id="cancel-budget-btn" class="bg-dark-4 text-secondary py-2 px-6 rounded-lg hover:bg-opacity-80">Cancel</button>
                 <button id="save-budget-btn" class="bg-blue-accent text-white py-2 px-6 rounded-lg font-bold hover:bg-opacity-80">Set</button>
             </div>
          </div>
@@ -528,15 +754,48 @@
          <div class="bg-dark-2 w-full max-w-xs mx-auto rounded-xl animate-modal-center-open shadow-lg p-4 text-center">
             <p id="confirm-message" class="mb-4">Are you sure?</p>
             <div class="flex justify-center gap-4">
-                <button id="confirm-no-btn" class="bg-dark-3 text-secondary py-2 px-6 rounded-lg hover:bg-opacity-80">No</button>
+                <button id="confirm-no-btn" class="bg-dark-4 text-secondary py-2 px-6 rounded-lg hover:bg-opacity-80">No</button>
                 <button id="confirm-yes-btn" class="bg-red-accent text-white py-2 px-6 rounded-lg font-bold hover:bg-opacity-80">Yes</button>
             </div>
          </div>
     </div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged,
+            GoogleAuthProvider,
+            signInWithPopup,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore,
+            doc,
+            setDoc,
+            onSnapshot,
+            deleteDoc
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- FIREBASE SETUP ---
+            // PASTE YOUR FIREBASE CONFIGURATION OBJECT HERE
+            const firebaseConfig = {
+                apiKey: "YOUR_API_KEY",
+                authDomain: "YOUR_AUTH_DOMAIN",
+                projectId: "YOUR_PROJECT_ID",
+                storageBucket: "YOUR_STORAGE_BUCKET",
+                messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+                appId: "YOUR_APP_ID"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            let unsubscribeFromFirestore = null; 
+
             // --- ICONS & COLORS ---
             const CATEGORY_ICONS = ['fa-gift', 'fa-dollar-sign', 'fa-graduation-cap', 'fa-utensils', 'fa-plane', 'fa-cut', 'fa-home', 'fa-mobile-alt', 'fa-user-friends', 'fa-shopping-cart', 'fa-futbol', 'fa-file-invoice-dollar', 'fa-car', 'fa-heart', 'fa-briefcase', 'fa-medkit', 'fa-film', 'fa-paw', 'fa-tshirt', 'fa-gas-pump', 'fa-couch', 'fa-gamepad', 'fa-book', 'fa-music'];
             const ACCOUNT_ICONS = ['fa-money-bill-wave', 'fa-credit-card', 'fa-piggy-bank', 'fa-university', 'fa-wallet', 'fa-landmark', 'fa-donate', 'fa-store', 'fa-coins', 'fa-receipt', 'fa-briefcase', 'fa-shield-alt', 'fa-building-columns', 'fa-sack-dollar', 'fa-shop', 'fa-bus', 'fa-plane-departure', 'fa-cash-register', 'fa-house-user', 'fa-lightbulb', 'fa-wifi', 'fa-faucet', 'fa-cart-flatbed', 'fa-mobile-screen-button'];
@@ -545,29 +804,33 @@
             let state = {
                 transactions: [],
                 accounts: [],
-                categories: {
-                    income: [],
-                    expense: []
-                },
-                budgets: {}, // { 'YYYY-MM': { categoryId: amount } }
-                currentTransaction: {
-                    type: 'expense',
-                    amountStr: '0',
-                    date: new Date().toISOString().split('T')[0],
-                    time: new Date().toTimeString().slice(0,5),
-                },
-                editingItem: null, 
-                editingBudget: null, // { categoryId }
-                confirmAction: null, 
-                currentDate: new Date(),
-                displayMode: 'monthly',
-                showTotal: 'yes',
-                calendarDate: new Date(), 
-                calendarContext: 'main',
-                filter: { type: null, value: null } 
+                categories: { income: [], expense: [] },
+                budgets: {},
+                settings: { theme: 'default', isLightMode: false, currencySymbol: '₱' }
             };
+
+            let currentTransaction = {};
+            let editingItem = null; 
+            let editingBudget = null;
+            let confirmAction = null; 
+            let currentDate = new Date();
+            let displayMode = 'monthly';
+            let showTotal = 'yes';
+            let calendarDate = new Date();
+            let calendarContext = 'main';
+            let filter = { type: null, value: null };
+            let currentNewCategory = {};
+            let currentNewAccount = {};
             
-            // --- DOM ELEMENTS ---
+            // --- DOM ELEMENTS (Add all your getElementById calls here) ---
+            const appWrapper = document.getElementById('app-wrapper');
+            const globalLoader = document.getElementById('global-loader');
+            const globalLoaderMessage = document.getElementById('global-loader-message');
+            const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarBtns = document.querySelectorAll('.sidebar-btn');
+            const settingsScreens = document.querySelectorAll('.settings-screen');
+            const closeSettingsBtns = document.querySelectorAll('.close-settings-btn');
             const addTransactionBtn = document.getElementById('add-transaction-btn');
             const addCategoryBtn = document.getElementById('add-category-btn');
             const addAccountBtn = document.getElementById('add-account-btn');
@@ -581,8 +844,6 @@
             const amountDisplay = document.getElementById('amount-display');
             const backspaceBtn = document.getElementById('backspace-btn');
             const keypadBtns = document.querySelectorAll('.keypad-btn');
-            const accountSelect = document.getElementById('account-select');
-            const categorySelect = document.getElementById('category-select');
             const notesInput = document.getElementById('notes-input');
             const dateInputBtn = document.getElementById('date-input-btn');
             const timeInputBtn = document.getElementById('time-input-btn');
@@ -608,14 +869,14 @@
             const clearSearchBtn = document.getElementById('clear-search-btn');
             const searchResultsContainer = document.getElementById('search-results-container');
             const recordDetailModal = document.getElementById('record-detail-modal');
-            
-            // AI Analysis Elements
+            const accountSelectBtn = document.getElementById('account-select-btn');
+            const accountSelectPanel = document.getElementById('account-select-panel');
+            const categorySelectBtn = document.getElementById('category-select-btn');
+            const categorySelectPanel = document.getElementById('category-select-panel');
             const analyzeSpendingBtn = document.getElementById('analyze-spending-btn');
             const analysisLoader = document.getElementById('analysis-loader');
             const analysisResults = document.getElementById('analysis-results');
             const analysisPlaceholder = document.getElementById('analysis-placeholder');
-
-            // Budget Elements
             const totalBudgetEl = document.getElementById('total-budget');
             const totalSpentEl = document.getElementById('total-spent');
             const budgetedCategoriesTitle = document.getElementById('budgeted-categories-title');
@@ -627,12 +888,6 @@
             const budgetMonthDisplay = document.getElementById('budget-month-display');
             const cancelBudgetBtn = document.getElementById('cancel-budget-btn');
             const saveBudgetBtn = document.getElementById('save-budget-btn');
-            const budgetContextModal = document.getElementById('budget-context-modal');
-            const changeLimitBtn = document.getElementById('change-limit-btn');
-            const removeBudgetBtn = document.getElementById('remove-budget-btn');
-
-
-            // Category Modal Elements
             const categoryModalTitle = document.getElementById('category-modal-title');
             const catIncomeTab = document.getElementById('cat-income-tab');
             const catExpenseTab = document.getElementById('cat-expense-tab');
@@ -646,9 +901,6 @@
             const uploadedIconPreview = document.getElementById('uploaded-icon-preview');
             const uploadedIconName = document.getElementById('uploaded-icon-name');
             const removeUploadedIconBtn = document.getElementById('remove-uploaded-icon-btn');
-
-
-            // Account Modal Elements
             const accountModalTitle = document.getElementById('account-modal-title');
             const accountInitialAmountInput = document.getElementById('account-initial-amount-input');
             const accountNameInput = document.getElementById('account-name-input');
@@ -661,40 +913,48 @@
             const uploadedAccountIconPreview = document.getElementById('uploaded-account-icon-preview');
             const uploadedAccountIconName = document.getElementById('uploaded-account-icon-name');
             const removeUploadedAccountIconBtn = document.getElementById('remove-uploaded-account-icon-btn');
-
-            // Context Menu Elements
             const contextModal = document.getElementById('context-modal');
             const editBtn = document.getElementById('edit-btn');
             const ignoreBtn = document.getElementById('ignore-btn');
             const deleteBtn = document.getElementById('delete-btn');
             const cancelContextBtn = document.getElementById('cancel-context-btn');
-
-            // Calendar Modal Elements
             const calendarMonthYear = document.getElementById('calendar-month-year');
             const calendarPrevMonthBtn = document.getElementById('calendar-prev-month-btn');
             const calendarNextMonthBtn = document.getElementById('calendar-next-month-btn');
             const calendarDaysGrid = document.getElementById('calendar-days-grid');
             const calendarOkBtn = document.getElementById('calendar-ok-btn');
             const calendarCancelBtn = document.getElementById('calendar-cancel-btn');
-
-            // Time Picker Modal Elements
             const timeHourInput = document.getElementById('time-hour-input');
             const timeMinuteInput = document.getElementById('time-minute-input');
             const timeAmBtn = document.getElementById('time-am-btn');
             const timePmBtn = document.getElementById('time-pm-btn');
             const timePickerOkBtn = document.getElementById('time-picker-ok-btn');
             const timePickerCancelBtn = document.getElementById('time-picker-cancel-btn');
-
-            // Confirm Modal Elements
             const confirmModal = document.getElementById('confirm-modal');
             const confirmMessage = document.getElementById('confirm-message');
             const confirmYesBtn = document.getElementById('confirm-yes-btn');
             const confirmNoBtn = document.getElementById('confirm-no-btn');
+            const userProfileSidebar = document.getElementById('user-profile-sidebar');
+            const userEmailDisplay = document.getElementById('user-email-display');
+            const logoutBtn = document.getElementById('logout-btn');
+            const mainLogoutBtn = document.getElementById('main-logout-btn');
+            const googleSigninBtn = document.getElementById('google-signin-btn');
+            const emailInput = document.getElementById('email-input');
+            const passwordInput = document.getElementById('password-input');
+            const emailSignupBtn = document.getElementById('email-signup-btn');
+            const authErrorMessage = document.getElementById('auth-error-message');
+            const loggedOutView = document.getElementById('logged-out-view');
+            const loggedInView = document.getElementById('logged-in-view');
+            const loggedInEmail = document.getElementById('logged-in-email');
+            const importCsvInput = document.getElementById('import-csv-input');
+            const exportCsvBtn = document.getElementById('export-csv-btn');
+            const currencyInput = document.getElementById('currency-input');
+            const saveCurrencyBtn = document.getElementById('save-currency-btn');
 
 
             // --- FUNCTIONS ---
             
-            const formatCurrency = (amount) => `₱${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            const formatCurrency = (amount) => `${state.settings.currencySymbol || '₱'}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             
             const formatDate = (date) => {
                 return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', weekday: 'long' });
@@ -709,14 +969,25 @@
                 hours = hours ? hours : 12; // the hour '0' should be '12'
                 return `${hours}:${minutes} ${ampm}`;
             };
+
+            const showGlobalLoader = (message) => {
+                globalLoaderMessage.textContent = message;
+                globalLoader.classList.remove('hidden');
+                globalLoader.classList.add('flex');
+            };
+
+            const hideGlobalLoader = () => {
+                globalLoader.classList.add('hidden');
+                globalLoader.classList.remove('flex');
+            };
             
             const updateDateDisplay = () => {
-                const now = state.currentDate;
+                const now = currentDate;
                 let text = '';
-                if(state.filter.type) {
-                     text = `Filter: ${state.filter.value}`;
+                if(filter.type) {
+                     text = `Filter: ${filter.value}`;
                 } else {
-                    switch(state.displayMode) {
+                    switch(displayMode) {
                         case 'daily':
                             text = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                             break;
@@ -733,7 +1004,7 @@
                             break;
                         default:
                             // For 3, 6, 9 months
-                            const monthCount = parseInt(state.displayMode.replace('months', ''));
+                            const monthCount = parseInt(displayMode.replace('months', ''));
                             const start = new Date(now);
                             const end = new Date(now);
                             end.setMonth(end.getMonth() + monthCount - 1);
@@ -756,18 +1027,18 @@
             };
             
             const getFilteredTransactions = () => {
-                let transactions = state.transactions;
+                let transactions = state.transactions || [];
                 
-                if (state.filter.type && state.filter.value) {
-                    transactions = transactions.filter(t => t[state.filter.type] === state.filter.value);
+                if (filter.type && filter.value) {
+                    transactions = transactions.filter(t => t[filter.type] === filter.value);
                 }
                 
-                const now = state.currentDate;
+                const now = currentDate;
                 return transactions.filter(t => {
                     const tDate = new Date(t.date + 'T00:00:00');
                     let startDate, endDate;
 
-                    switch(state.displayMode){
+                    switch(displayMode){
                         case 'daily':
                             startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                             endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -787,7 +1058,7 @@
                             endDate = new Date(now.getFullYear() + 1, 0, 1);
                             break;
                         default: // 3, 6, 9 months
-                            const monthCount = parseInt(state.displayMode.replace('months', ''));
+                            const monthCount = parseInt(displayMode.replace('months', ''));
                             startDate = new Date(now.getFullYear(), now.getMonth(), 1);
                             endDate = new Date(now.getFullYear(), now.getMonth() + monthCount, 1);
                             break;
@@ -860,7 +1131,7 @@
             const renderCategories = () => {
                 const renderList = (list, type, element) => {
                     element.innerHTML = '';
-                    if (list.length === 0) {
+                    if (!list || list.length === 0) {
                         element.innerHTML = `<p class="text-secondary text-sm">No categories yet.</p>`;
                     } else {
                         list.forEach(cat => {
@@ -894,11 +1165,11 @@
             
             const renderAccounts = () => {
                 accountsList.innerHTML = '';
-                if (state.accounts.length === 0) {
+                if (!state.accounts || state.accounts.length === 0) {
                     accountsList.innerHTML = `<p class="text-secondary text-sm">No accounts yet.</p>`;
                 } else {
                     state.accounts.forEach(acc => {
-                        const balance = state.transactions.reduce((bal, t) => {
+                        const balance = (state.transactions || []).reduce((bal, t) => {
                             if (t.account === acc.name) {
                                 return bal + (t.type === 'income' ? t.amount : -t.amount);
                             }
@@ -934,9 +1205,9 @@
             };
 
             const renderBudgets = () => {
-                const monthKey = state.currentDate.toISOString().slice(0, 7);
-                const monthBudgets = state.budgets[monthKey] || {};
-                const transactionsForMonth = state.transactions.filter(t => t.date.startsWith(monthKey) && t.type === 'expense');
+                const monthKey = currentDate.toISOString().slice(0, 7);
+                const monthBudgets = state.budgets ? state.budgets[monthKey] || {} : {};
+                const transactionsForMonth = (state.transactions || []).filter(t => t.date.startsWith(monthKey) && t.type === 'expense');
 
                 budgetedCategoriesList.innerHTML = '';
                 notBudgetedList.innerHTML = '';
@@ -944,7 +1215,7 @@
                 let totalBudget = 0;
                 let totalSpent = 0;
 
-                const allExpenseCategories = state.categories.expense.filter(c => !c.ignored);
+                const allExpenseCategories = (state.categories.expense || []).filter(c => !c.ignored);
 
                 allExpenseCategories.forEach(cat => {
                     const budgetLimit = monthBudgets[cat.id];
@@ -958,7 +1229,7 @@
 
                         const remaining = budgetLimit - spent;
                         const progress = budgetLimit > 0 ? (spent / budgetLimit) * 100 : (spent > 0 ? 100 : 0);
-                        const progressColor = progress > 100 ? 'bg-red-500' : 'bg-green-500';
+                        const progressColor = progress > 100 ? 'bg-red-accent' : 'bg-green-accent';
 
                         const iconHtml = cat.isCustom 
                                 ? `<img src="${cat.icon}" class="w-full h-full object-cover">` 
@@ -966,7 +1237,7 @@
                         const bgColor = cat.isCustom ? '' : `style="background-color: ${cat.color}"`;
 
                         const budgetEl = document.createElement('div');
-                        budgetEl.className = 'budget-item';
+                        budgetEl.className = 'budget-item relative';
                         budgetEl.innerHTML = `
                             <div class="flex justify-between items-center mb-2">
                                 <div class="flex items-center">
@@ -978,14 +1249,19 @@
                                 </div>
                                 <button class="budget-menu-btn text-secondary px-2" data-category-id="${cat.id}"><i class="fas fa-ellipsis-v"></i></button>
                             </div>
-                            <div class="grid grid-cols-2 gap-x-4 text-xs mb-1">
+                             <div class="grid grid-cols-2 gap-x-4 text-xs mb-1">
                                 <p>Spent: <span class="font-semibold">${formatCurrency(spent)}</span></p>
-                                <p class="text-right">Remaining: <span class="font-semibold">${formatCurrency(remaining)}</span></p>
+                                <p class="text-right">Remaining: <span class="font-semibold ${remaining < 0 ? 'text-red-accent' : ''}">${formatCurrency(remaining)}</span></p>
                             </div>
                             <div class="w-full bg-dark-3 rounded-full h-2.5">
                                 <div class="progress-bar-inner ${progressColor} h-2.5 rounded-full" style="width: ${Math.min(progress, 100)}%"></div>
                             </div>
                             ${progress > 100 ? `<p class="text-red-accent text-xs text-right mt-1 font-semibold">*Limit exceeded</p>` : ''}
+                            
+                            <div class="budget-context-menu hidden absolute right-0 mt-2 w-40 bg-dark-3 rounded-lg shadow-lg p-2 z-20">
+                                <button class="change-limit-btn w-full text-left p-2 hover:bg-dark-4 rounded-md text-sm" data-category-id="${cat.id}">Change limit</button>
+                                <button class="remove-budget-btn w-full text-left p-2 hover:bg-dark-4 rounded-md text-sm text-red-accent" data-category-id="${cat.id}">Remove budget</button>
+                            </div>
                         `;
                         budgetedCategoriesList.appendChild(budgetEl);
 
@@ -1004,7 +1280,7 @@
                                 </div>
                                 <span class="font-medium">${cat.name}</span>
                             </div>
-                            <button class="set-budget-btn border border-secondary text-secondary text-xs font-semibold py-1 px-3 rounded-full" data-category-id="${cat.id}">
+                            <button class="set-budget-btn border border-secondary text-secondary text-xs font-semibold py-1 px-3 rounded-full hover:bg-dark-3" data-category-id="${cat.id}">
                                 SET BUDGET
                             </button>
                         `;
@@ -1014,36 +1290,109 @@
                 
                 totalBudgetEl.textContent = formatCurrency(totalBudget);
                 totalSpentEl.textContent = formatCurrency(totalSpent);
-                budgetedCategoriesTitle.textContent = `Budgeted categories: ${state.currentDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
+                budgetedCategoriesTitle.textContent = `Budgeted categories: ${currentDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
             };
 
-            const populateSelects = () => {
+            const populateCustomSelects = () => {
+                const type = currentTransaction.type;
                 const activeAccounts = state.accounts.filter(a => !a.ignored);
-                accountSelect.innerHTML = activeAccounts.map(a => `<option value="${a.name}">${a.name}</option>`).join('') || `<option>No Accounts</option>`;
+                const activeCategories = state.categories[type].filter(c => !c.ignored);
 
-                const currentType = state.currentTransaction.type;
-                const activeCategories = state.categories[currentType].filter(c => !c.ignored);
-                categorySelect.innerHTML = activeCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join('') || `<option>No Categories</option>`;
+                // --- Populate Accounts ---
+                accountSelectPanel.innerHTML = ''; // Clear old options
+                if (activeAccounts.length > 0) {
+                    if (!currentTransaction.accountId || !activeAccounts.some(a => a.id === currentTransaction.accountId)) {
+                        currentTransaction.accountId = activeAccounts[0].id;
+                    }
+                    activeAccounts.forEach(acc => {
+                        const iconHtml = acc.isCustom
+                            ? `<img src="${acc.icon}" class="w-6 h-6 rounded-full object-cover">`
+                            : `<div class="w-6 h-6 rounded-full flex items-center justify-center" style="background-color:${acc.color}"><i class="fas ${acc.icon} text-xs text-white"></i></div>`;
+                        
+                        const optionEl = document.createElement('div');
+                        optionEl.className = `custom-select-option ${currentTransaction.accountId === acc.id ? 'selected' : ''}`;
+                        optionEl.dataset.value = acc.id;
+                        optionEl.innerHTML = `
+                            <div class="radio-circle"></div>
+                            <div class="flex-shrink-0 w-8">${iconHtml}</div>
+                            <span>${acc.name}</span>
+                        `;
+                        accountSelectPanel.appendChild(optionEl);
+                    });
+                } else {
+                    accountSelectPanel.innerHTML = `<div class="p-3 text-secondary text-sm">No accounts found.</div>`;
+                    currentTransaction.accountId = null;
+                }
+                updateSelectedDisplay(accountSelectBtn, state.accounts.find(a => a.id === currentTransaction.accountId));
+
+                // --- Populate Categories ---
+                categorySelectPanel.innerHTML = ''; // Clear old options
+                if (activeCategories.length > 0) {
+                    if (!currentTransaction.categoryId || !activeCategories.some(c => c.id === currentTransaction.categoryId)) {
+                        currentTransaction.categoryId = activeCategories[0].id;
+                    }
+                     activeCategories.forEach(cat => {
+                        const iconHtml = cat.isCustom
+                            ? `<img src="${cat.icon}" class="w-6 h-6 rounded-full object-cover">`
+                            : `<div class="w-6 h-6 rounded-full flex items-center justify-center" style="background-color:${cat.color}"><i class="fas ${cat.icon} text-xs text-white"></i></div>`;
+
+                        const optionEl = document.createElement('div');
+                        optionEl.className = `custom-select-option ${currentTransaction.categoryId === cat.id ? 'selected' : ''}`;
+                        optionEl.dataset.value = cat.id;
+                        optionEl.innerHTML = `
+                            <div class="radio-circle"></div>
+                            <div class="flex-shrink-0 w-8">${iconHtml}</div>
+                            <span>${cat.name}</span>
+                        `;
+                        categorySelectPanel.appendChild(optionEl);
+                    });
+                } else {
+                    categorySelectPanel.innerHTML = `<div class="p-3 text-secondary text-sm">No categories found.</div>`;
+                    currentTransaction.categoryId = null;
+                }
+                updateSelectedDisplay(categorySelectBtn, state.categories[type].find(c => c.id === currentTransaction.categoryId));
+            };
+
+            const updateSelectedDisplay = (btnElement, item) => {
+                if (item) {
+                    const iconHtml = item.isCustom
+                        ? `<img src="${item.icon}" class="w-6 h-6 rounded-full object-cover">`
+                        : `<div class="w-6 h-6 rounded-full flex items-center justify-center" style="background-color:${item.color}"><i class="fas ${item.icon} text-xs text-white"></i></div>`;
+                    btnElement.innerHTML = `
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-8">${iconHtml}</div>
+                            <span>${item.name}</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-secondary text-xs"></i>
+                    `;
+                } else {
+                    btnElement.innerHTML = `
+                        <span>Select an option</span>
+                        <i class="fas fa-chevron-down text-secondary text-xs"></i>
+                    `;
+                }
             };
 
             const resetTransactionModal = () => {
                 const now = new Date();
-                state.currentTransaction = {
+                currentTransaction = {
                     type: 'expense',
                     amountStr: '0',
                     date: now.toISOString().split('T')[0],
                     time: now.toTimeString().slice(0,5),
+                    accountId: null,
+                    categoryId: null,
                 };
                 amountDisplay.textContent = '0';
                 notesInput.value = '';
-                dateInputBtn.textContent = new Date(state.currentTransaction.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                timeInputBtn.textContent = formatAMPM(state.currentTransaction.time);
-                populateSelects();
+                dateInputBtn.textContent = new Date(currentTransaction.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                timeInputBtn.textContent = formatAMPM(currentTransaction.time);
+                populateCustomSelects();
                 updateModalTypeUI();
             };
 
             const updateModalTypeUI = () => {
-                const type = state.currentTransaction.type;
+                const type = currentTransaction.type;
                 if (type === 'income') {
                     incomeTab.classList.add('modal-tab-active', 'bg-green-accent', 'text-white');
                     expenseTab.classList.remove('modal-tab-active', 'bg-red-accent', 'text-white');
@@ -1055,21 +1404,22 @@
                     amountDisplay.classList.add('text-red-accent');
                     amountDisplay.classList.remove('text-green-accent');
                 }
-                populateSelects();
+                populateCustomSelects();
             };
             
             const handleKeypad = (key) => {
-                let { amountStr } = state.currentTransaction;
+                let { amountStr } = currentTransaction;
                 if (key === 'C') {
                     amountStr = '0';
                 } else if (key === '=') {
                     try {
-                        amountStr = String(eval(amountStr.replace('x', '*')) || '0');
+                        const sanitized = amountStr.replace(/[^0-9+\-*/().%x]/g, '').replace('x', '*');
+                        amountStr = String(eval(sanitized) || '0');
                     } catch (e) {
                         amountStr = 'Error';
                     }
                 } else if (['+', '-', '*', '/'].includes(key)) {
-                    if (amountStr !== '0' && !['+', '-', '*', '/'].includes(amountStr.slice(-1))) {
+                    if (amountStr !== '0' && amountStr !== 'Error' && !['+', '-', '*', '/'].includes(amountStr.slice(-1))) {
                        amountStr += key;
                     }
                 } else {
@@ -1077,70 +1427,65 @@
                     else amountStr += key;
                 }
                 
-                state.currentTransaction.amountStr = amountStr;
+                currentTransaction.amountStr = amountStr;
                 amountDisplay.textContent = amountStr;
             };
 
             const handleBackspace = () => {
-                let { amountStr } = state.currentTransaction;
+                let { amountStr } = currentTransaction;
                 amountStr = amountStr.length > 1 ? amountStr.slice(0, -1) : '0';
-                state.currentTransaction.amountStr = amountStr;
+                currentTransaction.amountStr = amountStr;
                 amountDisplay.textContent = amountStr;
             };
 
             const saveTransaction = () => {
                 let amount;
                 try {
-                    amount = eval(state.currentTransaction.amountStr);
+                    const sanitized = currentTransaction.amountStr.replace(/[^0-9+\-*/().%x]/g, '').replace('x', '*');
+                    amount = eval(sanitized);
                     if (isNaN(amount) || amount === 0) return;
                 } catch (e) {
                     return;
                 }
-
-                if (!categorySelect.value || categorySelect.value === 'No Categories') {
-                    alert("Please create a category first.");
+                
+                const account = state.accounts.find(a => a.id === currentTransaction.accountId);
+                const category = state.categories[currentTransaction.type].find(c => c.id === currentTransaction.categoryId);
+                
+                if (!category) {
+                    alert("Please select a category.");
                     return;
                 }
-                 if (!accountSelect.value || accountSelect.value === 'No Accounts') {
-                    alert("Please create an account first.");
+                 if (!account) {
+                    alert("Please select an account.");
                     return;
                 }
                 
-                if (state.editingItem && state.editingItem.type === 'transaction') {
-                     const index = state.transactions.findIndex(t => t.id === state.editingItem.id);
+                const transactionData = {
+                    type: currentTransaction.type,
+                    amount: Math.abs(amount),
+                    category: category.name,
+                    account: account.name,
+                    date: currentTransaction.date,
+                    time: currentTransaction.time,
+                    notes: notesInput.value,
+                };
+
+                if (editingItem && editingItem.type === 'transaction') {
+                    const index = state.transactions.findIndex(t => t.id === editingItem.id);
                      if (index > -1) {
-                         state.transactions[index] = {
-                             ...state.transactions[index], 
-                             type: state.currentTransaction.type,
-                             amount: Math.abs(amount),
-                             category: categorySelect.value,
-                             account: accountSelect.value,
-                             date: state.currentTransaction.date,
-                             time: state.currentTransaction.time,
-                             notes: notesInput.value,
-                         };
+                         state.transactions[index] = { ...state.transactions[index], ...transactionData };
                      }
                 } else {
-                     const newTransaction = {
-                        id: Date.now(),
-                        type: state.currentTransaction.type,
-                        amount: Math.abs(amount),
-                        category: categorySelect.value,
-                        account: accountSelect.value,
-                        date: state.currentTransaction.date,
-                        time: state.currentTransaction.time,
-                        notes: notesInput.value,
-                    };
-                    state.transactions.push(newTransaction);
+                     state.transactions.push({ id: crypto.randomUUID(), ...transactionData });
                 }
-
-                state.editingItem = null; 
+                
+                saveStateToFirestore();
+                editingItem = null; 
                 closeModal();
-                renderAll();
             };
             
             const openModal = () => {
-                state.editingItem = null;
+                editingItem = null;
                 resetTransactionModal();
                 transactionModal.classList.remove('hidden');
             };
@@ -1148,16 +1493,16 @@
             const closeModal = () => transactionModal.classList.add('hidden');
 
             const openCategoryModal = (type = 'expense', categoryToEdit = null) => {
-                state.editingItem = categoryToEdit ? { type: 'category', itemType: type, id: categoryToEdit.id } : null;
+                editingItem = categoryToEdit ? { type: 'category', itemType: type, id: categoryToEdit.id } : null;
 
-                if (state.editingItem) {
+                if (editingItem) {
                     categoryModalTitle.textContent = 'Edit category';
-                    state.currentNewCategory = { ...categoryToEdit };
+                    currentNewCategory = { ...categoryToEdit };
                     catNameInput.value = categoryToEdit.name;
                     colorPicker.value = categoryToEdit.color;
                 } else {
                     categoryModalTitle.textContent = 'Add new category';
-                    state.currentNewCategory = { type: 'expense', name: '', icon: CATEGORY_ICONS[0], color: '#C81C1C', isCustom: false };
+                    currentNewCategory = { type: 'expense', name: '', icon: CATEGORY_ICONS[0], color: '#C81C1C', isCustom: false };
                     catNameInput.value = '';
                     colorPicker.value = '#C81C1C';
                 }
@@ -1173,7 +1518,7 @@
             const closeCategoryModal = () => categoryModal.classList.add('hidden');
 
             const updateCatModalTypeUI = () => {
-                const { type } = state.currentNewCategory;
+                const { type } = currentNewCategory;
                 const incomeActiveClasses = ['modal-tab-active', 'bg-green-accent', 'text-white'];
                 const expenseActiveClasses = ['modal-tab-active', 'bg-red-accent', 'text-white'];
 
@@ -1185,7 +1530,7 @@
             };
             
             const renderCatIconAndColorPickers = () => {
-                const currentCat = state.editingItem ? state.categories[state.editingItem.itemType].find(c => c.id === state.editingItem.id) : state.currentNewCategory;
+                const currentCat = editingItem ? state.categories[editingItem.itemType].find(c => c.id === editingItem.id) : currentNewCategory;
                 
                 iconPicker.innerHTML = CATEGORY_ICONS.map(icon => `
                     <button class="icon-picker-item w-10 h-10 rounded-full flex items-center justify-center bg-dark-3 ${currentCat.icon === icon && !currentCat.isCustom ? 'selected' : ''}" data-icon="${icon}">
@@ -1198,38 +1543,42 @@
                 const name = catNameInput.value.trim();
                 if (!name) return;
                 
-                state.currentNewCategory.name = name;
+                currentNewCategory.name = name;
 
-                if (state.editingItem) {
-                    const {itemType, id} = state.editingItem;
+                if (editingItem) {
+                    const {itemType, id} = editingItem;
                     const catIndex = state.categories[itemType].findIndex(c => c.id === id);
                     if(catIndex > -1){
-                        state.categories[itemType][catIndex] = { ...state.categories[itemType][catIndex], ...state.currentNewCategory, name };
+                        state.categories[itemType][catIndex] = { ...state.categories[itemType][catIndex], ...currentNewCategory, name };
                     }
                 } else {
-                    const newCategory = { id: Date.now(), name, ...state.currentNewCategory };
-                    state.categories[newCategory.type].push(newCategory);
+                    const newCategory = { id: crypto.randomUUID(), name, ...currentNewCategory, ignored: false };
+                    const newCategoriesForType = [...state.categories[newCategory.type], newCategory];
+                    state.categories[newCategory.type] = newCategoriesForType;
                 }
                 
                 closeCategoryModal();
-                renderAll();
+                saveStateToFirestore();
+                renderAll(); // Force immediate UI update
             };
             
             const openAccountModal = (accountToEdit = null) => {
-                state.editingItem = accountToEdit ? { type: 'account', id: accountToEdit.id } : null;
+                editingItem = accountToEdit ? { type: 'account', id: accountToEdit.id } : null;
 
-                if (state.editingItem) {
+                if (editingItem) {
                     accountModalTitle.textContent = 'Edit account';
-                    state.currentNewAccount = { ...accountToEdit };
+                    currentNewAccount = { ...accountToEdit };
                     accountNameInput.value = accountToEdit.name;
                     accountInitialAmountInput.value = accountToEdit.initialAmount;
                     accountColorPicker.value = accountToEdit.color;
+                    accountInitialAmountInput.disabled = true;
                 } else {
                     accountModalTitle.textContent = 'Add new account';
-                    state.currentNewAccount = { name: '', icon: ACCOUNT_ICONS[0], initialAmount: 0, color: '#C81C1C', isCustom: false, ignored: false };
+                    currentNewAccount = { name: '', icon: ACCOUNT_ICONS[0], initialAmount: 0, color: '#C81C1C', isCustom: false, ignored: false };
                     accountNameInput.value = '';
                     accountInitialAmountInput.value = '';
                     accountColorPicker.value = '#C81C1C';
+                    accountInitialAmountInput.disabled = false;
                 }
                 
                 uploadedAccountIconPreviewContainer.classList.add('hidden');
@@ -1242,7 +1591,7 @@
             const closeAccountModal = () => accountModal.classList.add('hidden');
 
             const renderAccountIconPicker = () => {
-                const currentAcc = state.editingItem ? state.accounts.find(a => a.id === state.editingItem.id) : state.currentNewAccount;
+                const currentAcc = editingItem ? state.accounts.find(a => a.id === editingItem.id) : currentNewAccount;
                 accountIconPicker.innerHTML = ACCOUNT_ICONS.map(icon => `
                     <button class="icon-picker-item w-10 h-10 rounded-full flex items-center justify-center bg-dark-3 ${currentAcc.icon === icon && !currentAcc.isCustom ? 'selected' : ''}" data-icon="${icon}">
                         <i class="fas ${icon}"></i>
@@ -1255,27 +1604,29 @@
                 const initialAmount = parseFloat(accountInitialAmountInput.value) || 0;
                 if (!name) return;
 
-                state.currentNewAccount.name = name;
-                state.currentNewAccount.initialAmount = initialAmount;
+                currentNewAccount.name = name;
+                currentNewAccount.initialAmount = initialAmount;
 
-                if (state.editingItem) {
-                    const accIndex = state.accounts.findIndex(a => a.id === state.editingItem.id);
+                if (editingItem) {
+                    const accIndex = state.accounts.findIndex(a => a.id === editingItem.id);
                     if (accIndex > -1) {
-                         state.accounts[accIndex] = { ...state.accounts[accIndex], ...state.currentNewAccount };
+                         state.accounts[accIndex] = { ...state.accounts[accIndex], ...currentNewAccount };
                     }
                 } else {
-                    const newAccount = { id: Date.now(), ...state.currentNewAccount };
-                    state.accounts.push(newAccount);
+                    const newAccount = { id: crypto.randomUUID(), ...currentNewAccount };
+                    const newAccountsArray = [...state.accounts, newAccount];
+                    state.accounts = newAccountsArray;
                 }
                 closeAccountModal();
-                renderAll();
+                saveStateToFirestore();
+                renderAll(); // Force immediate UI update
             };
 
             const openSetBudgetModal = (categoryId) => {
                 const category = state.categories.expense.find(c => c.id === categoryId);
                 if (!category) return;
                 
-                state.editingBudget = { categoryId };
+                editingBudget = { categoryId };
 
                 const iconHtml = category.isCustom 
                     ? `<img src="${category.icon}" class="w-8 h-8 rounded-full mr-3">` 
@@ -1283,28 +1634,28 @@
 
                 budgetCategoryDisplay.innerHTML = `${iconHtml}<span>${category.name}</span>`;
                 
-                const monthKey = state.currentDate.toISOString().slice(0, 7);
+                const monthKey = currentDate.toISOString().slice(0, 7);
                 const currentBudget = state.budgets[monthKey]?.[categoryId];
                 budgetLimitInput.value = currentBudget || '';
 
-                budgetMonthDisplay.textContent = `Month: ${state.currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+                budgetMonthDisplay.textContent = `Month: ${currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
                 
                 setBudgetModal.classList.remove('hidden');
             };
 
             const closeSetBudgetModal = () => {
                 setBudgetModal.classList.add('hidden');
-                state.editingBudget = null;
+                editingBudget = null;
             };
 
             const saveBudget = () => {
                 const limit = parseFloat(budgetLimitInput.value);
-                if (isNaN(limit) || limit < 0 || !state.editingBudget) {
+                if (isNaN(limit) || limit < 0 || !editingBudget) {
                     return;
                 }
 
-                const { categoryId } = state.editingBudget;
-                const monthKey = state.currentDate.toISOString().slice(0, 7);
+                const { categoryId } = editingBudget;
+                const monthKey = currentDate.toISOString().slice(0, 7);
                 
                 if (!state.budgets[monthKey]) {
                     state.budgets[monthKey] = {};
@@ -1312,63 +1663,33 @@
                 state.budgets[monthKey][categoryId] = limit;
                 
                 closeSetBudgetModal();
-                renderBudgets();
-            };
-
-            const openBudgetContextMenu = (event) => {
-                const button = event.target.closest('.budget-menu-btn');
-                if (!button) return;
-
-                if (state.editingBudget && state.editingBudget.categoryId === parseInt(button.dataset.categoryId) && !budgetContextModal.classList.contains('hidden')) {
-                    closeBudgetContextMenu();
-                    state.editingBudget = null;
-                    return;
-                }
-
-                const categoryId = parseInt(button.dataset.categoryId);
-                state.editingBudget = { categoryId };
-
-                const rect = button.getBoundingClientRect();
-                const containerRect = document.getElementById('app-container').getBoundingClientRect();
-                
-                budgetContextModal.style.top = `${rect.bottom - containerRect.top}px`;
-                budgetContextModal.style.right = `${containerRect.right - rect.right}px`;
-                budgetContextModal.style.left = 'auto'; 
-                budgetContextModal.classList.remove('hidden');
-            };
-
-            const closeBudgetContextMenu = () => {
-                 budgetContextModal.classList.add('hidden');
-            }
-
-            const removeBudget = (categoryId) => {
-                const monthKey = state.currentDate.toISOString().slice(0, 7);
-                if (state.budgets[monthKey] && state.budgets[monthKey][categoryId] !== undefined) {
-                    delete state.budgets[monthKey][categoryId];
-                    renderBudgets();
-                }
+                saveStateToFirestore();
             };
 
             const openContextMenu = (type, id, itemType) => {
-                state.editingItem = { type, id, itemType };
+                editingItem = { type, id, itemType };
                 const item = type === 'category' 
                     ? state.categories[itemType].find(c => c.id === id) 
                     : state.accounts.find(a => a.id === id);
+                if (!item) { // Safeguard against missing item
+                    console.error(`Could not find item of type ${type} with id ${id}`);
+                    return;
+                }
                 ignoreBtn.textContent = item.ignored ? 'Un-ignore' : 'Ignore';
                 contextModal.classList.remove('hidden');
             };
 
             const closeContextMenu = () => {
                 contextModal.classList.add('hidden');
-                state.editingItem = null;
+                editingItem = null;
             };
 
             const openCalendarModal = (context = 'main') => {
-                state.calendarContext = context;
+                calendarContext = context;
                 if (context === 'transaction') {
-                    state.calendarDate = new Date(state.currentTransaction.date + 'T00:00:00');
+                    calendarDate = new Date(currentTransaction.date + 'T00:00:00');
                 } else {
-                    state.calendarDate = new Date(state.currentDate);
+                    calendarDate = new Date(currentDate);
                 }
                 renderCalendar();
                 calendarModal.classList.remove('hidden');
@@ -1377,9 +1698,9 @@
             const closeCalendarModal = () => calendarModal.classList.add('hidden');
 
             const renderCalendar = () => {
-                const year = state.calendarDate.getFullYear();
-                const month = state.calendarDate.getMonth();
-                calendarMonthYear.textContent = state.calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                const year = calendarDate.getFullYear();
+                const month = calendarDate.getMonth();
+                calendarMonthYear.textContent = calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
                 
                 calendarDaysGrid.innerHTML = '';
                 const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -1395,7 +1716,7 @@
                     dayEl.textContent = i;
                     dayEl.className = 'calendar-day w-8 h-8 flex items-center justify-center';
                     
-                    if (i === state.calendarDate.getDate() && month === state.calendarDate.getMonth() && year === state.calendarDate.getFullYear()) {
+                    if (i === calendarDate.getDate() && month === calendarDate.getMonth() && year === calendarDate.getFullYear()) {
                         dayEl.classList.add('selected');
                     }
                     if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
@@ -1403,7 +1724,7 @@
                     }
                     
                     dayEl.addEventListener('click', () => {
-                        state.calendarDate.setDate(i);
+                        calendarDate.setDate(i);
                         renderCalendar();
                     });
                     calendarDaysGrid.appendChild(dayEl);
@@ -1411,7 +1732,7 @@
             };
 
             const openTimePickerModal = () => {
-                const [hour, minute] = state.currentTransaction.time.split(':');
+                const [hour, minute] = currentTransaction.time.split(':');
                 const hour12 = parseInt(hour) % 12 || 12;
                 const ampm = parseInt(hour) >= 12 ? 'pm' : 'am';
                 
@@ -1434,13 +1755,13 @@
 
             const openConfirmModal = (message, onConfirm) => {
                 confirmMessage.textContent = message;
-                state.confirmAction = onConfirm;
+                confirmAction = onConfirm;
                 confirmModal.classList.remove('hidden');
             };
 
             const closeConfirmModal = () => {
                 confirmModal.classList.add('hidden');
-                state.confirmAction = null;
+                confirmAction = null;
             };
 
             const markdownToHtml = (text) => {
@@ -1472,7 +1793,7 @@
             };
 
             const callGeminiAPI = async (prompt) => {
-                const apiKey = "";
+                const apiKey = ""; // Keep this empty
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
                 const payload = {
@@ -1487,38 +1808,425 @@
                     });
 
                     if (!response.ok) {
-                        console.error("API Error Response:", await response.text());
-                        return "Sorry, I couldn't get any insights at the moment. The server returned an error.";
+                        const errorText = await response.text();
+                        console.error("API Error Response:", errorText);
+                        return { error: `Sorry, I couldn't get any insights at the moment. The server returned an error: ${response.status}` };
                     }
 
                     const result = await response.json();
                     const candidate = result.candidates?.[0];
 
                     if (candidate && candidate.content?.parts?.[0]?.text) {
-                        return candidate.content.parts[0].text;
+                        return { data: candidate.content.parts[0].text };
                     } else {
                         console.error("Unexpected API response structure:", result);
-                        return "Sorry, I received an unexpected response from the analysis service.";
+                        return { error: "Sorry, I received an unexpected response from the analysis service." };
                     }
                 } catch (error) {
                     console.error("Error calling Gemini API:", error);
-                    return "An error occurred while trying to analyze your finances. Please check your internet connection and try again.";
+                    return { error: "An error occurred while trying to analyze your finances. Please check your internet connection and try again." };
                 }
+            };
+            
+            const toggleBudgetContextMenu = (button) => {
+                const menu = button.closest('.budget-item').querySelector('.budget-context-menu');
+                document.querySelectorAll('.budget-context-menu').forEach(m => {
+                    if (m !== menu) m.classList.add('hidden');
+                });
+                menu.classList.toggle('hidden');
+            };
+
+            const deleteAllData = () => {
+                 openConfirmModal("This is your final confirmation. All data will be erased permanently. Continue?", () => {
+                    const user = auth.currentUser;
+                    if (user) {
+                        const docRef = doc(db, "users", user.uid);
+                        deleteDoc(docRef).then(() => {
+                            // On successful deletion, reset the local state
+                            initializeNewUserState();
+                            renderAll();
+                            alert("Your cloud data has been deleted.");
+                        }).catch(error => {
+                            console.error("Error deleting document: ", error);
+                            alert("Could not delete your data. Please try again.");
+                        });
+                    }
+                });
+            };
+
+            const applyTheme = (themeName) => {
+                const themeClasses = ['theme-sunrise', 'theme-ocean', 'theme-forest', 'theme-twilight', 'theme-sakura', 'theme-light'];
+                appWrapper.classList.remove(...themeClasses);
+                if (themeName !== 'default') {
+                     appWrapper.classList.add(`theme-${themeName}`);
+                }
+                // Re-apply light mode if it's active
+                if(state.settings.isLightMode) appWrapper.classList.add('theme-light');
+
+                document.querySelectorAll('.theme-option').forEach(el => {
+                    el.classList.toggle('selected', el.dataset.theme === themeName);
+                });
+                state.settings.theme = themeName;
+                saveStateToFirestore();
+            };
+
+            const applyUiMode = (isLight) => {
+                appWrapper.classList.toggle('theme-light', isLight);
+                document.getElementById('light-mode-toggle').checked = isLight;
+                state.settings.isLightMode = isLight;
+                saveStateToFirestore();
+            };
+            
+            const closeAllSettingsScreens = () => {
+                settingsScreens.forEach(s => s.classList.add('hidden'));
             };
 
 
             const renderAll = () => {
-                headerSummary.classList.toggle('hidden', state.showTotal === 'no');
+                headerSummary.classList.toggle('hidden', showTotal === 'no');
                 renderSummary();
                 renderRecords(null, recordsView);
                 renderCategories();
                 renderAccounts();
                 renderBudgets();
-                populateSelects();
+                populateCustomSelects();
                 updateDateDisplay();
             }
+            
+            // --- FIREBASE & AUTH FUNCTIONS ---
+            
+            const saveStateToFirestore = async () => {
+                const user = auth.currentUser;
+                if (!user) return; // Don't save if not logged in
+
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    await setDoc(docRef, state);
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                }
+            };
+
+            const initializeNewUserState = () => {
+                state = {
+                    transactions: [],
+                    accounts: [
+                        { id: crypto.randomUUID(), name: 'BDO', icon: 'fa-university', initialAmount: 0, color: '#0033A0', isCustom: false, ignored: false },
+                        { id: crypto.randomUUID(), name: 'BPI', icon: 'fa-university', initialAmount: 0, color: '#E4002B', isCustom: false, ignored: false },
+                        { id: crypto.randomUUID(), name: 'Cash', icon: 'fa-money-bill-wave', initialAmount: 0, color: '#34C759', isCustom: false, ignored: false },
+                        { id: crypto.randomUUID(), name: 'GCash', icon: 'fa-mobile-alt', initialAmount: 0, color: '#0A84FF', isCustom: false, ignored: false },
+                        { id: crypto.randomUUID(), name: 'PayMaya', icon: 'fa-credit-card', initialAmount: 0, color: '#00A899', isCustom: false, ignored: false },
+                        { id: crypto.randomUUID(), name: 'SeaBank', icon: 'fa-piggy-bank', initialAmount: 0, color: '#FF6B00', isCustom: false, ignored: false },
+                        { id: crypto.randomUUID(), name: 'ShopeePay', icon: 'fa-shopping-bag', initialAmount: 0, color: '#EE4D2D', isCustom: false, ignored: false },
+                    ],
+                    categories: {
+                        income: [
+                            { id: crypto.randomUUID(), type: 'income', name: 'Allowance', icon: 'fa-hand-holding-dollar', color: '#76D7C4', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'income', name: 'Commission', icon: 'fa-percent', color: '#BB86FC', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'income', name: 'Interest', icon: 'fa-chart-line', color: '#48C9B0', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'income', name: 'Random Awards', icon: 'fa-gift', color: '#FFD700', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'income', name: 'Salary', icon: 'fa-dollar-sign', color: '#5AC8FA', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'income', name: 'Uncategory', icon: 'fa-question-circle', color: '#AAB7B8', isCustom: false, ignored: false }
+                        ],
+                        expense: [
+                            { id: crypto.randomUUID(), type: 'expense', name: 'Bills', icon: 'fa-file-invoice-dollar', color: '#EC7063', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'expense', name: 'Education', icon: 'fa-graduation-cap', color: '#AF7AC5', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'expense', name: 'Essentials', icon: 'fa-shopping-cart', color: '#58D68D', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'expense', name: 'Food', icon: 'fa-utensils', color: '#FF9500', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'expense', name: 'Gala/Leisure', icon: 'fa-glass-cheers', color: '#F7DC6F', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'expense', name: 'MAMA / PAPA', icon: 'fa-users', color: '#5DADE2', isCustom: false, ignored: false },
+                            { id: crypto.randomUUID(), type: 'expense', name: 'Transportation', icon: 'fa-car', color: '#E59866', isCustom: false, ignored: false }
+                        ]
+                    },
+                    budgets: {},
+                    settings: {
+                        theme: 'default',
+                        isLightMode: false,
+                        currencySymbol: '₱'
+                    }
+                };
+                saveStateToFirestore(); // Save initial state for new user
+            };
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // User is signed in
+                    showGlobalLoader("Syncing your data...");
+                    const docRef = doc(db, "users", user.uid);
+                    
+                    if (unsubscribeFromFirestore) {
+                        unsubscribeFromFirestore();
+                    }
+                    
+                    unsubscribeFromFirestore = onSnapshot(docRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            state = docSnap.data();
+                            // Ensure nested objects exist
+                            state.categories = state.categories || { income: [], expense: [] };
+                            state.accounts = state.accounts || [];
+                            state.transactions = state.transactions || [];
+                            state.budgets = state.budgets || {};
+                            state.settings = state.settings || { theme: 'default', isLightMode: false, currencySymbol: '₱' };
+                            if (!state.settings.currencySymbol) {
+                                state.settings.currencySymbol = '₱'; // Add for backward compatibility
+                            }
+                        } else {
+                            // New user, create initial data structure
+                            initializeNewUserState();
+                        }
+                        applyTheme(state.settings.theme);
+                        applyUiMode(state.settings.isLightMode);
+                        renderAll();
+                        hideGlobalLoader();
+                    }, (error) => {
+                        console.error("Firestore snapshot error:", error);
+                        hideGlobalLoader();
+                    });
+
+                    // Update UI to show logged-in state
+                    userProfileSidebar.classList.remove('hidden');
+                    userEmailDisplay.textContent = user.email || "Logged In";
+                    loggedInEmail.textContent = user.email || "Logged In";
+                    loggedOutView.classList.add('hidden');
+                    loggedInView.classList.remove('hidden');
+
+                } else {
+                    // User is signed out
+                    if (unsubscribeFromFirestore) {
+                        unsubscribeFromFirestore();
+                    }
+                     state = { // Reset local state to defaults
+                        transactions: [], accounts: [], categories: { income: [], expense: [] }, budgets: {},
+                        settings: { theme: 'default', isLightMode: false, currencySymbol: '₱' }
+                    };
+                    renderAll(); // Re-render with empty state
+                    
+                    // Update UI to show logged-out state
+                    userProfileSidebar.classList.add('hidden');
+                    loggedOutView.classList.remove('hidden');
+                    loggedInView.classList.add('hidden');
+                }
+            });
+
+            googleSigninBtn.addEventListener('click', () => {
+                const provider = new GoogleAuthProvider();
+                signInWithPopup(auth, provider)
+                    .then(() => {
+                        closeAllSettingsScreens();
+                    }).catch((error) => {
+                        authErrorMessage.textContent = error.message;
+                    });
+            });
+
+            emailSignupBtn.addEventListener('click', () => {
+                const email = emailInput.value;
+                const password = passwordInput.value;
+                if (!email || !password) {
+                    authErrorMessage.textContent = "Please enter email and password.";
+                    return;
+                }
+                authErrorMessage.textContent = "";
+
+                signInWithEmailAndPassword(auth, email, password)
+                .catch((error) => {
+                    if (error.code === 'auth/user-not-found') {
+                        // If user not found, create a new account
+                        createUserWithEmailAndPassword(auth, email, password)
+                        .then(() => {
+                           closeAllSettingsScreens();
+                        })
+                        .catch((createError) => {
+                            authErrorMessage.textContent = createError.message;
+                        });
+                    } else {
+                        authErrorMessage.textContent = error.message;
+                    }
+                });
+            });
+
+            const handleLogout = () => {
+                signOut(auth).catch((error) => {
+                    console.error("Logout Error:", error);
+                });
+            };
+            logoutBtn.addEventListener('click', handleLogout);
+            mainLogoutBtn.addEventListener('click', handleLogout);
+
+            // --- AI IMPORT & EXPORT FUNCTIONS ---
+            const exportToCsv = () => {
+                const headers = ['TIME', 'TYPE', 'AMOUNT', 'CATEGORY', 'ACCOUNT', 'NOTES'];
+                
+                const rows = state.transactions.map(t => {
+                    const date = new Date(`${t.date}T${t.time}`);
+                    const formattedTime = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                    const type = t.type === 'income' ? '(+) Income' : '(-) Expense';
+                    const amount = t.amount.toFixed(2);
+                    const category = `"${t.category.replace(/"/g, '""')}"`;
+                    const account = `"${t.account.replace(/"/g, '""')}"`;
+                    const notes = `"${(t.notes || '').replace(/"/g, '""')}"`;
+                    return [formattedTime, type, amount, category, account, notes].join(',');
+                });
+
+                const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `export_${new Date().toISOString().slice(0,10)}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+            
+            const processCsvWithAI = async (csvText) => {
+                showGlobalLoader("AI is analyzing your CSV...");
+                const prompt = `
+                    You are a data processing expert for a financial application. Your task is to parse the following CSV data and convert it into a structured JSON object.
+
+                    **CRITICAL INSTRUCTION: You MUST ignore any row where the 'TYPE' column is '(*) Transfer'. Do not include these rows in the final JSON output.**
+
+                    The JSON object must have three top-level keys: "accounts", "categories", and "transactions".
+
+                    1.  **accounts**: Create an array of unique account objects from the 'ACCOUNT' column. Each object must have these properties: 'id' (a new unique crypto.randomUUID()), 'name' (cleaned string, e.g., "(2) GCASH" becomes "GCASH"), 'icon' (a suitable FontAwesome icon from this list: ${ACCOUNT_ICONS.join(', ')}), 'color' (random hex code), 'isCustom' (false), 'ignored' (false), and 'initialAmount' (0).
+
+                    2.  **categories**: Create an object with two keys: "income" and "expense". Each should contain an array of unique category objects from the 'CATEGORY' column. Each object needs 'id' (a new unique crypto.randomUUID()), 'name' (string), 'icon' (a suitable FontAwesome icon from this list: ${CATEGORY_ICONS.join(', ')}), 'color' (random hex code), 'isCustom' (false), 'ignored' (false), and 'type' ('income' or 'expense'). The 'type' is 'income' if the CSV 'TYPE' is '(+) Income', otherwise it's 'expense'.
+
+                    3.  **transactions**: Create an array of transaction objects from rows that are NOT transfers.
+                        - 'id': Generate a new unique crypto.randomUUID().
+                        - 'date': From the 'TIME' column, in 'YYYY-MM-DD' format.
+                        - 'time': From the 'TIME' column, in 'HH:mm' (24-hour) format.
+                        - 'type': 'income' or 'expense', based on the 'TYPE' column.
+                        - 'category': The name from the 'CATEGORY' column.
+                        - 'account': The cleaned name from the 'ACCOUNT' column.
+                        - 'amount': The numeric value from the 'AMOUNT' column.
+                        - 'notes': The value from the 'NOTES' column.
+
+                    Here is the CSV data:
+                    ${csvText}
+
+                    Respond ONLY with the JSON object. Your entire response must be a single, valid JSON object, starting with '{' and ending with '}'.
+                `;
+
+                const result = await callGeminiAPI(prompt);
+                hideGlobalLoader();
+
+                if (result.error) {
+                    alert(`AI Processing Error: ${result.error}`);
+                    return;
+                }
+
+                try {
+                    const parsedData = JSON.parse(result.data);
+                    if (parsedData.accounts && parsedData.categories && parsedData.transactions) {
+                         openConfirmModal("AI has processed your data. This will overwrite your current data. Continue?", () => {
+                            state.accounts = parsedData.accounts;
+                            state.categories = parsedData.categories;
+                            state.transactions = parsedData.transactions;
+                            state.budgets = {}; // Reset budgets
+                            saveStateToFirestore();
+                            closeAllSettingsScreens();
+                        });
+                    } else {
+                        alert("AI processing failed to return valid data structure. Please check your CSV format.");
+                    }
+                } catch (e) {
+                    console.error("JSON Parsing Error:", e, "Raw AI Response:", result.data);
+                    alert("Could not parse the AI response. The data might be invalid.");
+                }
+            };
+
+            importCsvInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        processCsvWithAI(event.target.result);
+                    };
+                    reader.readAsText(file);
+                    importCsvInput.value = ''; // Reset input
+                }
+            });
+            exportCsvBtn.addEventListener('click', exportToCsv);
+
 
             // --- EVENT LISTENERS ---
+            sidebarToggleBtn.addEventListener('click', () => {
+                appWrapper.classList.toggle('sidebar-open');
+            });
+            
+            sidebarBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const screenId = btn.dataset.screen;
+                    if (screenId === 'currency-screen') {
+                        currencyInput.value = state.settings.currencySymbol || '₱';
+                    }
+                    closeAllSettingsScreens();
+                    document.getElementById(screenId).classList.remove('hidden');
+                    appWrapper.classList.remove('sidebar-open');
+                });
+            });
+
+            closeSettingsBtns.forEach(btn => {
+                btn.addEventListener('click', closeAllSettingsScreens);
+            });
+            
+            document.querySelector('#themes-screen').addEventListener('click', (e) => {
+                const themeBtn = e.target.closest('.theme-option');
+                if (themeBtn) applyTheme(themeBtn.dataset.theme);
+            });
+
+            document.getElementById('light-mode-toggle').addEventListener('change', (e) => {
+                applyUiMode(e.target.checked);
+            });
+            
+            saveCurrencyBtn.addEventListener('click', () => {
+                const newSymbol = currencyInput.value.trim();
+                if (newSymbol) {
+                    state.settings.currencySymbol = newSymbol;
+                    saveStateToFirestore();
+                    renderAll(); // Re-render everything to show the new symbol
+                    closeAllSettingsScreens();
+                }
+            });
+
+            budgetsView.addEventListener('click', (e) => {
+                const setBudgetBtn = e.target.closest('.set-budget-btn');
+                const budgetMenuBtn = e.target.closest('.budget-menu-btn');
+                const changeLimitBtn = e.target.closest('.change-limit-btn');
+                const removeBudgetBtn = e.target.closest('.remove-budget-btn');
+
+                if (setBudgetBtn) {
+                    const categoryId = setBudgetBtn.dataset.categoryId;
+                    openSetBudgetModal(categoryId);
+                } else if (budgetMenuBtn) {
+                    toggleBudgetContextMenu(budgetMenuBtn);
+                } else if (changeLimitBtn) {
+                    const categoryId = changeLimitBtn.dataset.categoryId;
+                    openSetBudgetModal(categoryId);
+                    toggleBudgetContextMenu(changeLimitBtn);
+                } else if (removeBudgetBtn) {
+                    const categoryId = removeBudgetBtn.dataset.categoryId;
+                    openConfirmModal("Remove this budget? The budget for this category will be removed for this month.", () => {
+                        const monthKey = currentDate.toISOString().slice(0, 7);
+                        if (state.budgets[monthKey] && state.budgets[monthKey][categoryId] !== undefined) {
+                            delete state.budgets[monthKey][categoryId];
+                            saveStateToFirestore();
+                        }
+                    });
+                    toggleBudgetContextMenu(removeBudgetBtn);
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.budget-item')) {
+                    document.querySelectorAll('.budget-context-menu').forEach(m => m.classList.add('hidden'));
+                }
+                 if (!e.target.closest('#sidebar') && !e.target.closest('#sidebar-toggle-btn') && appWrapper.classList.contains('sidebar-open')) {
+                    appWrapper.classList.remove('sidebar-open');
+                }
+                 if (!e.target.closest('#account-select-btn') && !e.target.closest('#account-select-panel') && !e.target.closest('#category-select-btn') && !e.target.closest('#category-select-panel')) {
+                    closeAllCustomSelects();
+                }
+            });
             addTransactionBtn.addEventListener('click', openModal);
             addCategoryBtn.addEventListener('click', () => openCategoryModal());
             addAccountBtn.addEventListener('click', () => openAccountModal());
@@ -1531,26 +2239,26 @@
                 btn.addEventListener('click', () => handleKeypad(btn.dataset.key));
             });
 
-            incomeTab.addEventListener('click', () => { state.currentTransaction.type = 'income'; updateModalTypeUI(); });
-            expenseTab.addEventListener('click', () => { state.currentTransaction.type = 'expense'; updateModalTypeUI(); });
+            incomeTab.addEventListener('click', () => { currentTransaction.type = 'income'; updateModalTypeUI(); });
+            expenseTab.addEventListener('click', () => { currentTransaction.type = 'expense'; updateModalTypeUI(); });
             
             dateInputBtn.addEventListener('click', () => openCalendarModal('transaction'));
             timeInputBtn.addEventListener('click', openTimePickerModal);
 
             cancelCatBtn.addEventListener('click', closeCategoryModal);
             saveCatBtn.addEventListener('click', saveCategory);
-            catIncomeTab.addEventListener('click', () => { state.currentNewCategory.type = 'income'; updateCatModalTypeUI(); });
-            catExpenseTab.addEventListener('click', () => { state.currentNewCategory.type = 'expense'; updateCatModalTypeUI(); });
+            catIncomeTab.addEventListener('click', () => { currentNewCategory.type = 'income'; updateCatModalTypeUI(); });
+            catExpenseTab.addEventListener('click', () => { currentNewCategory.type = 'expense'; updateCatModalTypeUI(); });
             iconPicker.addEventListener('click', (e) => {
                 const target = e.target.closest('.icon-picker-item');
                 if(target) {
-                    state.currentNewCategory.icon = target.dataset.icon;
-                    state.currentNewCategory.isCustom = false;
+                    currentNewCategory.icon = target.dataset.icon;
+                    currentNewCategory.isCustom = false;
                     renderCatIconAndColorPickers();
                 }
             });
             colorPicker.addEventListener('input', (e) => {
-                state.currentNewCategory.color = e.target.value;
+                currentNewCategory.color = e.target.value;
             });
 
             uploadIconInput.addEventListener('change', (e) => {
@@ -1558,8 +2266,8 @@
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        state.currentNewCategory.icon = event.target.result;
-                        state.currentNewCategory.isCustom = true;
+                        currentNewCategory.icon = event.target.result;
+                        currentNewCategory.isCustom = true;
                         
                         uploadedIconPreview.src = event.target.result;
                         uploadedIconName.textContent = file.name;
@@ -1574,8 +2282,8 @@
             removeUploadedIconBtn.addEventListener('click', () => {
                 uploadIconInput.value = '';
                 uploadedIconPreviewContainer.classList.add('hidden');
-                state.currentNewCategory.isCustom = false;
-                state.currentNewCategory.icon = CATEGORY_ICONS[0]; 
+                currentNewCategory.isCustom = false;
+                currentNewCategory.icon = CATEGORY_ICONS[0]; 
                 renderCatIconAndColorPickers();
             });
 
@@ -1585,13 +2293,13 @@
             accountIconPicker.addEventListener('click', (e) => {
                 const target = e.target.closest('.icon-picker-item');
                 if (target) {
-                    state.currentNewAccount.icon = target.dataset.icon;
-                    state.currentNewAccount.isCustom = false;
+                    currentNewAccount.icon = target.dataset.icon;
+                    currentNewAccount.isCustom = false;
                     renderAccountIconPicker();
                 }
             });
             accountColorPicker.addEventListener('input', (e) => {
-                state.currentNewAccount.color = e.target.value;
+                currentNewAccount.color = e.target.value;
             });
 
             uploadAccountIconInput.addEventListener('change', (e) => {
@@ -1599,8 +2307,8 @@
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        state.currentNewAccount.icon = event.target.result;
-                        state.currentNewAccount.isCustom = true;
+                        currentNewAccount.icon = event.target.result;
+                        currentNewAccount.isCustom = true;
                         uploadedAccountIconPreview.src = event.target.result;
                         uploadedAccountIconName.textContent = file.name;
                         uploadedAccountIconPreviewContainer.classList.remove('hidden');
@@ -1613,75 +2321,39 @@
             removeUploadedAccountIconBtn.addEventListener('click', () => {
                 uploadAccountIconInput.value = '';
                 uploadedAccountIconPreviewContainer.classList.add('hidden');
-                state.currentNewAccount.isCustom = false;
-                state.currentNewAccount.icon = ACCOUNT_ICONS[0];
+                currentNewAccount.isCustom = false;
+                currentNewAccount.icon = ACCOUNT_ICONS[0];
                 renderAccountIconPicker();
             });
-
-            budgetsView.addEventListener('click', (e) => {
-                const setBudgetBtn = e.target.closest('.set-budget-btn');
-                const budgetMenuBtn = e.target.closest('.budget-menu-btn');
-                if (setBudgetBtn) {
-                    const categoryId = parseInt(setBudgetBtn.dataset.categoryId);
-                    openSetBudgetModal(categoryId);
-                } else if (budgetMenuBtn) {
-                    openBudgetContextMenu(e);
-                }
-            });
+            
             cancelBudgetBtn.addEventListener('click', closeSetBudgetModal);
             saveBudgetBtn.addEventListener('click', saveBudget);
-            
-            changeLimitBtn.addEventListener('click', () => {
-                if (state.editingBudget) {
-                    openSetBudgetModal(state.editingBudget.categoryId);
-                }
-                closeBudgetContextMenu();
-                state.editingBudget = null; 
-            });
-
-            removeBudgetBtn.addEventListener('click', () => {
-                if(state.editingBudget) {
-                    const categoryId = state.editingBudget.categoryId;
-                    openConfirmModal("Remove this budget? Budget over this category will be removed for this month, are you sure?", () => {
-                        removeBudget(categoryId);
-                    });
-                }
-                closeBudgetContextMenu();
-                state.editingBudget = null; 
-            });
 
             document.body.addEventListener('click', (e) => {
                 const menuBtn = e.target.closest('.context-menu-btn');
                 const filterTrigger = e.target.closest('.filter-trigger');
                 const recordItem = e.target.closest('.record-item');
 
-                if (!e.target.closest('.budget-menu-btn') && !e.target.closest('#budget-context-modal')) {
-                    if (!budgetContextModal.classList.contains('hidden')) {
-                         closeBudgetContextMenu();
-                         state.editingBudget = null;
-                    }
-                }
-
                 if (menuBtn) {
                     const itemEl = menuBtn.closest('.item-container');
-                    const id = parseInt(itemEl.dataset.id);
+                    const id = itemEl.dataset.id; // No longer parsing as an integer
                     const type = itemEl.dataset.type;
                     const itemType = itemEl.dataset.itemType; 
                     openContextMenu(type, id, itemType);
                 } else if(filterTrigger) {
-                    state.filter.type = filterTrigger.dataset.filterType;
-                    state.filter.value = filterTrigger.dataset.filterValue;
+                    filter.type = filterTrigger.dataset.filterType;
+                    filter.value = filterTrigger.dataset.filterValue;
                     document.querySelector('.tab-btn[data-view="records-view"]').click();
                     renderAll();
                 } else if(recordItem) {
-                    const recordId = parseInt(recordItem.dataset.id);
+                    const recordId = recordItem.dataset.id; // No longer parsing as an integer
                     const record = state.transactions.find(t => t.id === recordId);
                     if (record) openRecordDetailModal(record);
                 }
             });
 
             editBtn.addEventListener('click', () => {
-                const { type, id, itemType } = state.editingItem;
+                const { type, id, itemType } = editingItem;
                 if (type === 'category') {
                     const category = state.categories[itemType].find(c => c.id === id);
                     openCategoryModal(itemType, category);
@@ -1693,7 +2365,7 @@
             });
 
             ignoreBtn.addEventListener('click', () => {
-                const { type, id, itemType } = state.editingItem;
+                const { type, id, itemType } = editingItem;
                 if (type === 'category') {
                     const catIndex = state.categories[itemType].findIndex(c => c.id === id);
                     if (catIndex > -1) state.categories[itemType][catIndex].ignored = !state.categories[itemType][catIndex].ignored;
@@ -1702,11 +2374,11 @@
                     if (accIndex > -1) state.accounts[accIndex].ignored = !state.accounts[accIndex].ignored;
                 }
                 closeContextMenu();
-                renderAll();
+                saveStateToFirestore();
             });
 
             deleteBtn.addEventListener('click', () => {
-                const itemToDelete = { ...state.editingItem };
+                const itemToDelete = { ...editingItem };
                 closeContextMenu();
                 openConfirmModal(`Delete this ${itemToDelete.type}? This cannot be undone.`, () => {
                     if (itemToDelete.type === 'category') {
@@ -1718,7 +2390,7 @@
                              state.accounts = state.accounts.filter(a => a.id !== itemToDelete.id);
                         }
                     }
-                    renderAll();
+                    saveStateToFirestore();
                 });
             });
 
@@ -1726,41 +2398,41 @@
 
             confirmNoBtn.addEventListener('click', closeConfirmModal);
             confirmYesBtn.addEventListener('click', () => {
-                if (state.confirmAction) {
-                    state.confirmAction();
+                if (confirmAction) {
+                    confirmAction();
                 }
                 closeConfirmModal();
             });
 
             currentDateDisplay.addEventListener('click', () => {
-                if (state.filter.type) {
-                    state.filter = { type: null, value: null };
+                if (filter.type) {
+                    filter = { type: null, value: null };
                     renderAll();
                 } else {
                     openCalendarModal('main');
                 }
             });
             prevDateBtn.addEventListener('click', () => {
-                if (state.filter.type) return;
-                const now = state.currentDate;
-                switch(state.displayMode) {
+                if (filter.type) return;
+                const now = currentDate;
+                switch(displayMode) {
                     case 'daily': now.setDate(now.getDate() - 1); break;
                     case 'weekly': now.setDate(now.getDate() - 7); break;
                     case 'monthly': now.setMonth(now.getMonth() - 1); break;
                     case 'yearly': now.setFullYear(now.getFullYear() - 1); break;
-                    default: now.setMonth(now.getMonth() - parseInt(state.displayMode.replace('months', ''))); break;
+                    default: now.setMonth(now.getMonth() - parseInt(displayMode.replace('months', ''))); break;
                 }
                 renderAll();
             });
             nextDateBtn.addEventListener('click', () => {
-                if (state.filter.type) return;
-                 const now = state.currentDate;
-                switch(state.displayMode) {
+                if (filter.type) return;
+                 const now = currentDate;
+                switch(displayMode) {
                     case 'daily': now.setDate(now.getDate() + 1); break;
                     case 'weekly': now.setDate(now.getDate() + 7); break;
                     case 'monthly': now.setMonth(now.getMonth() + 1); break;
                     case 'yearly': now.setFullYear(now.getFullYear() + 1); break;
-                    default: now.setMonth(now.getMonth() + parseInt(state.displayMode.replace('months', ''))); break;
+                    default: now.setMonth(now.getMonth() + parseInt(displayMode.replace('months', ''))); break;
                 }
                 renderAll();
             });
@@ -1770,13 +2442,13 @@
                 const totalOption = e.target.closest('.show-total-option');
 
                 if (displayOption) {
-                    state.displayMode = displayOption.dataset.mode;
+                    displayMode = displayOption.dataset.mode;
                     document.querySelectorAll('.display-option').forEach(el => el.classList.remove('selected'));
                     displayOption.classList.add('selected');
-                    state.filter = { type: null, value: null }; 
+                    filter = { type: null, value: null }; 
                     renderAll();
                 } else if(totalOption) {
-                    state.showTotal = totalOption.dataset.total;
+                    showTotal = totalOption.dataset.total;
                     document.querySelectorAll('.show-total-option').forEach(el => el.classList.remove('selected'));
                     totalOption.classList.add('selected');
                     renderAll();
@@ -1788,21 +2460,21 @@
             });
             
             calendarPrevMonthBtn.addEventListener('click', () => {
-                state.calendarDate.setMonth(state.calendarDate.getMonth() - 1);
+                calendarDate.setMonth(calendarDate.getMonth() - 1);
                 renderCalendar();
             });
             calendarNextMonthBtn.addEventListener('click', () => {
-                state.calendarDate.setMonth(state.calendarDate.getMonth() + 1);
+                calendarDate.setMonth(calendarDate.getMonth() + 1);
                 renderCalendar();
             });
             calendarCancelBtn.addEventListener('click', closeCalendarModal);
             calendarOkBtn.addEventListener('click', () => {
-                if (state.calendarContext === 'main') {
-                    state.currentDate = new Date(state.calendarDate);
+                if (calendarContext === 'main') {
+                    currentDate = new Date(calendarDate);
                     renderAll();
                 } else { 
-                    state.currentTransaction.date = state.calendarDate.toISOString().split('T')[0];
-                    dateInputBtn.textContent = new Date(state.currentTransaction.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    currentTransaction.date = calendarDate.toISOString().split('T')[0];
+                    dateInputBtn.textContent = new Date(currentTransaction.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 }
                 closeCalendarModal();
             });
@@ -1831,8 +2503,8 @@
                 const formattedHour = String(hour).padStart(2, '0');
                 const formattedMinute = String(minute).padStart(2, '0');
 
-                state.currentTransaction.time = `${formattedHour}:${formattedMinute}`;
-                timeInputBtn.textContent = formatAMPM(state.currentTransaction.time);
+                currentTransaction.time = `${formattedHour}:${formattedMinute}`;
+                timeInputBtn.textContent = formatAMPM(currentTransaction.time);
                 closeTimePickerModal();
             });
 
@@ -1873,41 +2545,83 @@
             });
 
             recordDetailModal.addEventListener('click', (e) => {
-                const target = e.target;
-                const closeBtn = target.closest('#close-record-detail-btn');
-                const editBtn = target.closest('#edit-record-btn');
-                const deleteBtn = target.closest('#delete-record-btn');
+                const closeBtn = e.target.closest('#close-record-detail-btn');
+                const editBtn = e.target.closest('#edit-record-btn');
+                const deleteBtn = e.target.closest('#delete-record-btn');
     
-                if (closeBtn) {
+                if (closeBtn || !e.target.closest('.bg-dark-2')) {
                     recordDetailModal.classList.add('hidden');
                 } else if (deleteBtn) {
                     recordDetailModal.classList.add('hidden');
                     openConfirmModal('Delete this transaction? This cannot be undone.', () => {
-                        if (state.editingItem && state.editingItem.type === 'transaction') {
-                            state.transactions = state.transactions.filter(t => t.id !== state.editingItem.id);
-                            state.editingItem = null;
-                            renderAll();
+                        if (editingItem && editingItem.type === 'transaction') {
+                            state.transactions = state.transactions.filter(t => t.id !== editingItem.id);
+                            editingItem = null;
+                            saveStateToFirestore();
                         }
                     });
                 } else if (editBtn) {
-                    if (!state.editingItem || state.editingItem.type !== 'transaction') return;
-                    const recordToEdit = state.transactions.find(t => t.id === state.editingItem.id);
+                    if (!editingItem || editingItem.type !== 'transaction') return;
+                    const recordToEdit = state.transactions.find(t => t.id === editingItem.id);
                     if (!recordToEdit) return;
     
                     recordDetailModal.classList.add('hidden');
+
+                    const account = state.accounts.find(a => a.name === recordToEdit.account);
+                    const category = state.categories[recordToEdit.type].find(c => c.name === recordToEdit.category);
                     
-                    state.currentTransaction = { ...recordToEdit, amountStr: String(recordToEdit.amount) };
+                    currentTransaction = { 
+                        ...recordToEdit, 
+                        amountStr: String(recordToEdit.amount),
+                        accountId: account ? account.id : null,
+                        categoryId: category ? category.id : null,
+                    };
                     
-                    amountDisplay.textContent = state.currentTransaction.amountStr;
-                    notesInput.value = state.currentTransaction.notes;
-                    dateInputBtn.textContent = new Date(state.currentTransaction.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    timeInputBtn.textContent = formatAMPM(state.currentTransaction.time);
+                    amountDisplay.textContent = currentTransaction.amountStr;
+                    notesInput.value = currentTransaction.notes;
+                    dateInputBtn.textContent = new Date(currentTransaction.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    timeInputBtn.textContent = formatAMPM(currentTransaction.time);
                     
                     updateModalTypeUI();
-                    accountSelect.value = state.currentTransaction.account;
-                    categorySelect.value = state.currentTransaction.category;
-    
                     transactionModal.classList.remove('hidden');
+                }
+            });
+
+            // Custom Select Listeners
+            const closeAllCustomSelects = () => {
+                accountSelectPanel.classList.add('hidden');
+                categorySelectPanel.classList.add('hidden');
+            }
+
+            accountSelectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = accountSelectPanel.classList.contains('hidden');
+                closeAllCustomSelects();
+                if(isHidden) accountSelectPanel.classList.remove('hidden');
+            });
+
+            categorySelectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = categorySelectPanel.classList.contains('hidden');
+                closeAllCustomSelects();
+                if(isHidden) categorySelectPanel.classList.remove('hidden');
+            });
+
+            accountSelectPanel.addEventListener('click', (e) => {
+                const option = e.target.closest('.custom-select-option');
+                if(option) {
+                    currentTransaction.accountId = option.dataset.value;
+                    populateCustomSelects(); // Re-render to show selection
+                    closeAllCustomSelects();
+                }
+            });
+
+            categorySelectPanel.addEventListener('click', (e) => {
+                const option = e.target.closest('.custom-select-option');
+                if(option) {
+                    currentTransaction.categoryId = option.dataset.value;
+                    populateCustomSelects(); // Re-render to show selection
+                    closeAllCustomSelects();
                 }
             });
 
@@ -1954,10 +2668,14 @@
                     ${transactionList}
                 `;
 
-                const resultText = await callGeminiAPI(prompt);
-                const resultHtml = markdownToHtml(resultText);
-
-                analysisResults.innerHTML = resultHtml;
+                const result = await callGeminiAPI(prompt);
+                
+                if (result.error) {
+                     analysisResults.innerHTML = `<p class="text-red-accent">${result.error}</p>`;
+                } else {
+                    analysisResults.innerHTML = markdownToHtml(result.data);
+                }
+                
                 analysisLoader.classList.add('hidden');
                 analysisResults.classList.remove('hidden');
                 analyzeSpendingBtn.disabled = false;
@@ -1966,7 +2684,7 @@
 
 
             const openRecordDetailModal = (record) => {
-                state.editingItem = { type: 'transaction', id: record.id };
+                editingItem = { type: 'transaction', id: record.id };
                 const header = recordDetailModal.querySelector('#record-detail-header');
                 const typeEl = header.querySelector('p:nth-of-type(1)');
                 const amountEl = header.querySelector('p:nth-of-type(2)');
@@ -1987,10 +2705,54 @@
                 recordDetailModal.classList.remove('hidden');
             };
 
+            // Keyboard Shortcuts Listener
+            document.addEventListener('keydown', (e) => {
+                const isTransactionModalActive = !transactionModal.classList.contains('hidden');
+                const isCategoryModalActive = !categoryModal.classList.contains('hidden');
+                const isAccountModalActive = !accountModal.classList.contains('hidden');
+                const isAnyModalActive = isTransactionModalActive || isCategoryModalActive || isAccountModalActive;
+
+                if (e.key === 'Enter' && isAnyModalActive) {
+                    if (isTransactionModalActive && document.activeElement !== notesInput) {
+                        e.preventDefault();
+                        saveBtn.click();
+                    } else if (isCategoryModalActive && document.activeElement !== catNameInput) {
+                        e.preventDefault();
+                        saveCatBtn.click();
+                    } else if (isAccountModalActive && document.activeElement !== accountNameInput && document.activeElement !== accountInitialAmountInput) {
+                        e.preventDefault();
+                        saveAccountBtn.click();
+                    }
+                }
+
+                if (isTransactionModalActive && document.activeElement !== notesInput) {
+                    const key = e.key;
+                    if (/[0-9]/.test(key)) {
+                        handleKeypad(key);
+                    } else if (['+', '-', '/', '.', '%', '(', ')'].includes(key)) {
+                        handleKeypad(key);
+                    } else if (key === '*') {
+                        handleKeypad('*');
+                    } else if (key === 'Enter') {
+                        e.preventDefault(); 
+                        handleKeypad('=');
+                    } else if (key === 'Backspace') {
+                        handleBackspace();
+                    } else if (key.toLowerCase() === 'c') {
+                        handleKeypad('C');
+                    }
+                }
+            });
+
             // --- INITIALIZATION ---
-            document.querySelector(`.display-option[data-mode="${state.displayMode}"]`).classList.add('selected');
-            document.querySelector(`.show-total-option[data-total="${state.showTotal}"]`).classList.add('selected');
-            renderAll();
+            const init = () => {
+                document.querySelector(`.display-option[data-mode="${displayMode}"]`).classList.add('selected');
+                document.querySelector(`.show-total-option[data-total="${showTotal}"]`).classList.add('selected');
+                resetTransactionModal(); // Initialize currentTransaction object
+                renderAll();
+            };
+            
+            init();
         });
     </script>
 </body>
