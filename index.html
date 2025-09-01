@@ -330,9 +330,10 @@
                 <div id="logged-in-view" class="hidden text-center">
                     <i class="fas fa-check-circle text-green-accent text-5xl mb-4"></i>
                     <h3 class="text-lg font-semibold">You are logged in!</h3>
-                    <p class="text-secondary">Your data is now syncing automatically across your devices.</p>
+                    <p class="text-secondary">Your data is now syncing automatically.</p>
                     <p class="text-sm mt-2 truncate" id="logged-in-email"></p>
-                    <button id="main-logout-btn" class="mt-4 w-full bg-red-accent text-white font-bold py-3 px-4 rounded-lg hover:opacity-90">Logout</button>
+                    <button id="done-login-btn" class="mt-4 w-full bg-blue-accent text-white font-bold py-3 px-4 rounded-lg hover:opacity-90">Done</button>
+                    <button id="main-logout-btn" class="mt-2 w-full bg-red-accent text-white font-bold py-3 px-4 rounded-lg hover:opacity-90">Logout</button>
                 </div>
             </div>
         </div>
@@ -783,12 +784,13 @@
             // --- FIREBASE SETUP ---
             // PASTE YOUR FIREBASE CONFIGURATION OBJECT HERE
             const firebaseConfig = {
-                apiKey: "YOUR_API_KEY",
-                authDomain: "YOUR_AUTH_DOMAIN",
-                projectId: "YOUR_PROJECT_ID",
-                storageBucket: "YOUR_STORAGE_BUCKET",
-                messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-                appId: "YOUR_APP_ID"
+              apiKey: "AIzaSyDZid-8dXXzjPhKd1OzWHPq5Ma7zDUhYMY",
+              authDomain: "money-tracker-online-fa225.firebaseapp.com",
+              projectId: "money-tracker-online-fa225",
+              storageBucket: "money-tracker-online-fa225.appspot.com",
+              messagingSenderId: "1097583442545",
+              appId: "1:1097583442545:web:3cb9ee0b0243bee64b39d0",
+              measurementId: "G-V8YCMJRRGP"
             };
 
             const app = initializeApp(firebaseConfig);
@@ -950,6 +952,7 @@
             const exportCsvBtn = document.getElementById('export-csv-btn');
             const currencyInput = document.getElementById('currency-input');
             const saveCurrencyBtn = document.getElementById('save-currency-btn');
+            const doneLoginBtn = document.getElementById('done-login-btn');
 
 
             // --- FUNCTIONS ---
@@ -1544,22 +1547,24 @@
                 if (!name) return;
                 
                 currentNewCategory.name = name;
+                
+                const newCategories = { ...state.categories };
 
                 if (editingItem) {
                     const {itemType, id} = editingItem;
-                    const catIndex = state.categories[itemType].findIndex(c => c.id === id);
+                    const catIndex = newCategories[itemType].findIndex(c => c.id === id);
                     if(catIndex > -1){
-                        state.categories[itemType][catIndex] = { ...state.categories[itemType][catIndex], ...currentNewCategory, name };
+                        newCategories[itemType][catIndex] = { ...newCategories[itemType][catIndex], ...currentNewCategory, name };
                     }
                 } else {
                     const newCategory = { id: crypto.randomUUID(), name, ...currentNewCategory, ignored: false };
-                    const newCategoriesForType = [...state.categories[newCategory.type], newCategory];
-                    state.categories[newCategory.type] = newCategoriesForType;
+                    newCategories[newCategory.type] = [...newCategories[newCategory.type], newCategory];
                 }
+                state.categories = newCategories;
                 
                 closeCategoryModal();
                 saveStateToFirestore();
-                renderAll(); // Force immediate UI update
+                renderAll();
             };
             
             const openAccountModal = (accountToEdit = null) => {
@@ -1606,20 +1611,23 @@
 
                 currentNewAccount.name = name;
                 currentNewAccount.initialAmount = initialAmount;
+                
+                const newAccountsArray = [...state.accounts];
 
                 if (editingItem) {
-                    const accIndex = state.accounts.findIndex(a => a.id === editingItem.id);
+                    const accIndex = newAccountsArray.findIndex(a => a.id === editingItem.id);
                     if (accIndex > -1) {
-                         state.accounts[accIndex] = { ...state.accounts[accIndex], ...currentNewAccount };
+                         newAccountsArray[accIndex] = { ...newAccountsArray[accIndex], ...currentNewAccount };
                     }
                 } else {
                     const newAccount = { id: crypto.randomUUID(), ...currentNewAccount };
-                    const newAccountsArray = [...state.accounts, newAccount];
-                    state.accounts = newAccountsArray;
+                    newAccountsArray.push(newAccount);
                 }
+                state.accounts = newAccountsArray;
+
                 closeAccountModal();
                 saveStateToFirestore();
-                renderAll(); // Force immediate UI update
+                renderAll();
             };
 
             const openSetBudgetModal = (categoryId) => {
@@ -2012,7 +2020,7 @@
                 const provider = new GoogleAuthProvider();
                 signInWithPopup(auth, provider)
                     .then(() => {
-                        closeAllSettingsScreens();
+                        // The onAuthStateChanged listener will handle the UI update
                     }).catch((error) => {
                         authErrorMessage.textContent = error.message;
                     });
@@ -2032,9 +2040,6 @@
                     if (error.code === 'auth/user-not-found') {
                         // If user not found, create a new account
                         createUserWithEmailAndPassword(auth, email, password)
-                        .then(() => {
-                           closeAllSettingsScreens();
-                        })
                         .catch((createError) => {
                             authErrorMessage.textContent = createError.message;
                         });
@@ -2051,6 +2056,7 @@
             };
             logoutBtn.addEventListener('click', handleLogout);
             mainLogoutBtn.addEventListener('click', handleLogout);
+            doneLoginBtn.addEventListener('click', closeAllSettingsScreens);
 
             // --- AI IMPORT & EXPORT FUNCTIONS ---
             const exportToCsv = () => {
